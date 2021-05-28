@@ -40,13 +40,14 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   arm-symbianelf avr-elf \
   bfin-elf bfin-uclinux bfin-linux-uclibc bfin-rtems bfin-openbsd \
   bpf-unknown-none \
-  c6x-elf c6x-uclinux cr16-elf cris-elf \
+  c6x-elf c6x-uclinux cr16-elfOPT-enable-obsolete cris-elf \
   csky-elf csky-linux-gnu \
   epiphany-elf epiphany-elfOPT-with-stack-offset=16 fido-elf \
   fr30-elf frv-elf frv-linux ft32-elf h8300-elf hppa-linux-gnu \
   hppa-linux-gnuOPT-enable-sjlj-exceptions=yes hppa64-linux-gnu \
-  hppa2.0-hpux10.1 hppa64-hpux11.3 \
-  hppa64-hpux11.0OPT-enable-sjlj-exceptions=yes hppa2.0-hpux11.9 \
+  hppa2.0-hpux10.1OPT-enable-obsolete hppa64-hpux11.3 \
+  hppa64-hpux11.0OPT-enable-sjlj-exceptions=yes \
+  hppa2.0-hpux11.9OPT-enable-obsolete \
   i686-pc-linux-gnu i686-apple-darwin i686-apple-darwin9 i686-apple-darwin10 \
   i486-freebsd4 i686-freebsd6 i686-kfreebsd-gnu \
   i686-netbsdelf9 \
@@ -99,7 +100,7 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   tilegx-linux-gnuOPT-enable-obsolete tilegxbe-linux-gnuOPT-enable-obsolete \
   tilepro-linux-gnuOPT-enable-obsolete \
   v850e1-elf v850e-elf v850-elf v850-rtems vax-linux-gnu \
-  vax-netbsdelf vax-openbsd visium-elf x86_64-apple-darwin \
+  vax-netbsdelf visium-elf x86_64-apple-darwin \
   x86_64-pc-linux-gnuOPT-with-fpmath=avx \
   x86_64-elfOPT-with-fpmath=sse x86_64-freebsd6 x86_64-netbsd \
   x86_64-w64-mingw32 \
