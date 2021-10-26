@@ -5555,7 +5555,7 @@ case ${target} in
 			tm_defines="$tm_defines DEFAULT_CPU_ARCH=CPU_NATIVE"
 			;;
 		la464)
-			tm_defines="$tm_defines DEFAULT_CPU_ARCH=CPU_la464"
+			tm_defines="$tm_defines DEFAULT_CPU_ARCH=CPU_LA464"
 			;;
 		loongarch64)
 			tm_defines="$tm_defines DEFAULT_CPU_ARCH=CPU_LOONGARCH64"
