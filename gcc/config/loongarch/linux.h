@@ -55,3 +55,13 @@ along with GCC; see the file COPYING3.  If not see
 /* FIXME*/
 /* The default value isn't sufficient in 64-bit mode.  */
 #define STACK_CHECK_PROTECT (TARGET_64BIT ? 16 * 1024 : 12 * 1024)
+
+
+/* With GLIBC */
+#undef GNU_USER_LINK_EMULATION_SPEC
+#define GNU_USER_LINK_EMULATION_SPEC \
+  "elf" XLEN_SPEC "loongarch"
+
+#undef GLIBC_DYNAMIC_LINKER_SPEC
+#define GLIBC_DYNAMIC_LINKER_SPEC \
+  "/lib" XLEN_SPEC "/ld-linux-loongarch-" IABI_KEY_SPEC "-" FABI_KEY_SPEC ".so.1"

@@ -24,10 +24,17 @@ along with GCC; see the file COPYING3.  If not see
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
 
-/* GNU-specific SPEC definitions */
-#define GNU_USER_LINK_EMULATION64 "elf64loongarch"
+/* Definitions for use in OS headers.  */
+#define FABI_KEY_SPEC \
+  "%{mfloat-abi=double:df}" \
+  "%{mfloat-abi=single:sf}" \
+  "%{mfloat-abi=soft:nf}"
 
-#define GLIBC_DYNAMIC_LINKER_LP64 "/lib64/ld.so.1"
+#define IABI_KEY_SPEC \
+  "%{mabi=lp64:lp64}"
+
+#define XLEN_SPEC \
+  "%{mabi=lp64:64}"
 
 #undef GNU_USER_TARGET_LINK_SPEC
 #define GNU_USER_TARGET_LINK_SPEC "\
@@ -35,9 +42,10 @@ along with GCC; see the file COPYING3.  If not see
   %{!shared: \
     %{!static: \
       %{rdynamic:-export-dynamic} \
-      %{mabi=lp64: -dynamic-linker " GLIBC_DYNAMIC_LINKER_LP64 "}} \
+      -dynamic-linker " GLIBC_DYNAMIC_LINKER_SPEC "} \
     %{static}} \
-  %{mabi=lp64:-m" GNU_USER_LINK_EMULATION64 "}"
+  -m " GNU_USER_LINK_EMULATION_SPEC
+
 
 /* Similar to standard Linux, but adding -ffast-math support.  */
 #undef GNU_USER_TARGET_MATHFILE_SPEC
