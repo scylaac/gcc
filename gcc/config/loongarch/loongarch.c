@@ -5715,8 +5715,8 @@ loongarch_adjust_cost (rtx_insn *, int dep_type, rtx_insn *, int cost,
 static int
 loongarch_issue_rate (void)
 {
-  if ((unsigned long) loongarch_cpu_tune < N_CPU_TYPES)
-    return loongarch_cpu_issue_rate [loongarch_cpu_tune];
+  if ((unsigned long) __ACTUAL_TUNE < N_TUNE_TYPES)
+    return loongarch_cpu_issue_rate [__ACTUAL_TUNE];
   else
     return 1;
 }
@@ -5727,8 +5727,8 @@ loongarch_issue_rate (void)
 static int
 loongarch_multipass_dfa_lookahead (void)
 {
-  if ((unsigned long) loongarch_cpu_tune < N_CPU_TYPES)
-    return loongarch_cpu_multipass_dfa_lookahead [loongarch_cpu_tune];
+  if ((unsigned long) __ACTUAL_TUNE < N_ARCH_TYPES)
+    return loongarch_cpu_multipass_dfa_lookahead [__ACTUAL_TUNE];
   else
     return 0;
 }
@@ -6019,25 +6019,17 @@ loongarch_option_override_internal (struct gcc_options *opts,
 {
   int i, regno, mode;
 
+  (void) opts_set;
+
   /* Set the small data limit.  */
   loongarch_small_data_threshold = (global_options_set.x_g_switch_value
 				    ? g_switch_value
 				    : LARCH_DEFAULT_GVALUE);
 
-  /* Handle machine option combinations: compute defaults/conflicts etc.  */
-  loongarch_handle_m_option_combinations(
-    & loongarch_cpu_arch,
-    & loongarch_cpu_tune,
-    & loongarch_isa_int,
-    & loongarch_isa_float,
-    & loongarch_abi_int,
-    & loongarch_abi_float,
-#ifdef __loongarch__
-    & loongarch_native_cpu_type
-#else
-    NULL
-#endif
-  );
+  /* Handle target-specific options: compute defaults/conflicts etc.  */
+  loongarch_config_target (&la_target, la_opt_switches,
+    la_opt_cpu_arch, la_opt_cpu_tune, la_opt_fpu,
+    la_opt_abi_base, la_opt_abi_ext, la_opt_cmodel, 0);
 
   /* End of code shared with GAS.  */
   if (TARGET_ABI_LP64)
@@ -6047,32 +6039,29 @@ loongarch_option_override_internal (struct gcc_options *opts,
   if (optimize_size)
     loongarch_cost = &loongarch_rtx_cost_optimize_size;
   else
-    loongarch_cost = &loongarch_cpu_rtx_cost_data[loongarch_cpu_tune];
+    loongarch_cost = &loongarch_cpu_rtx_cost_data[__ACTUAL_TUNE];
 
   /* If the user hasn't specified a branch cost, use the processor's
      default.  */
   if (loongarch_branch_cost == 0)
     loongarch_branch_cost = loongarch_cost->branch_cost;
 
-  if (opts_set->x_loongarch_cmodel_var)
+  switch (la_target.cmodel)
     {
-      switch (opts->x_loongarch_cmodel_var)
-	{
-	  case CMODEL_TINY_STATIC:
-	  case CMODEL_EXTREME:
-	    if (opts->x_flag_plt)
-	      error ("code model %qs and %qs not support %s mode",
-		     "tiny-static", "extreme", "plt");
-	      break;
+      case CMODEL_TINY_STATIC:
+      case CMODEL_EXTREME:
+	if (opts->x_flag_plt)
+	  error ("code model %qs and %qs not support %s mode",
+		 "tiny-static", "extreme", "plt");
+	break;
 
-	  case CMODEL_NORMAL:
-	  case CMODEL_TINY:
-	  case CMODEL_LARGE:
-	    break;
+      case CMODEL_NORMAL:
+      case CMODEL_TINY:
+      case CMODEL_LARGE:
+	break;
 
-	  default:
-	    gcc_unreachable ();
-	}
+      default:
+	gcc_unreachable ();
     }
 
   /* .cfi_* directives generate a read-only section, so fall back on
