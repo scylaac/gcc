@@ -21,32 +21,24 @@ along with GCC; see the file COPYING3.  If not see
  * This ensures that a compiler configured with --disable-multilib
  * can work in an multilib environment.  */
 
-#if defined (__DISABLE_MULTILIB) && defined (__DISABLE_MULTIARCH)
+#if defined(__DISABLE_MULTILIB) && defined(__DISABLE_MULTIARCH)
 
-  /* Integer ABI  */
-  #if DEFAULT_ABI_INT == ABI_LP64
-    #define INT_ABI_SUFFIX "lib64"
+  /* Integer ABI */
+  #if DEFAULT_ABI_INT == ABI_BASE_LP64D
+    #define ABI_SUFFIX "lib64"
+  #elif DEFAULT_ABI_INT == ABI_BASE_LP64F
+    #define ABI_SUFFIX "lib64/f32"
+  #elif DEFAULT_ABI_INT == ABI_BASE_LP64S
+    #define ABI_SUFFIX "lib64/sf"
   #endif
-
-  /* Floating-Point ABI  */
-  #if DEFAULT_ABI_FLOAT == ABI_SOFT_FLOAT
-    #define FLOAT_ABI_SUFFIX "soft/"
-  #elif DEFAULT_ABI_FLOAT == ABI_SINGLE_FLOAT
-    #define FLOAT_ABI_SUFFIX "single/"
-  #endif
-
 #endif
 
-#ifndef INT_ABI_SUFFIX
-#define INT_ABI_SUFFIX "lib"
+#ifndef ABI_SUFFIX
+#define ABI_SUFFIX "lib"
 #endif
 
-#ifndef FLOAT_ABI_SUFFIX
-#define FLOAT_ABI_SUFFIX ""
-#endif
-
-#define STANDARD_STARTFILE_PREFIX_1 "/" INT_ABI_SUFFIX "/" FLOAT_ABI_SUFFIX
-#define STANDARD_STARTFILE_PREFIX_2 "/usr/" INT_ABI_SUFFIX "/" FLOAT_ABI_SUFFIX
+#define STANDARD_STARTFILE_PREFIX_1 "/" ABI_SUFFIX "/"
+#define STANDARD_STARTFILE_PREFIX_2 "/usr/" ABI_SUFFIX "/"
 
 
 /* Define this to be nonzero if static stack checking is supported.  */
