@@ -75,20 +75,10 @@ init_enabled_abi_types ()
 /* Switch masks */
 #undef M
 #define M(NAME) OPTION_MASK_##NAME
-const int loongarch_switch_mask_set[N_SWITCH_TYPES] = {
+const int loongarch_switch_mask[N_SWITCH_TYPES] = {
   /* SW_SOFT_FLOAT */    M(FORCE_SOFTF),
   /* SW_SINGLE_FLOAT */  M(FORCE_F32),
   /* SW_DOUBLE_FLOAT */  M(FORCE_F64),
-};
-
-const int loongarch_switch_mask_clear[N_SWITCH_TYPES] = {
-  /* SW_SOFT_FLOAT */    M(FORCE_F32) | M(FORCE_F64),
-  /* SW_SINGLE_FLOAT */  M(FORCE_SOFTF) | M(FORCE_F64),
-  /* SW_DOUBLE_FLOAT */  M(FORCE_SOFTF) | M(FORCE_F32),
-};
-
-const int loongarch_switch_mask_invert[N_SWITCH_TYPES] = {
-  /* SW_*_FLOAT */    0, 0, 0,
 };
 #undef M
 
@@ -155,7 +145,7 @@ loongarch_config_target (struct loongarch_target *target,
       M_OPT_ABSENT(opt_cmodel)   ? 0 : 1,
   };
 
-#define on(NAME) ((loongarch_switch_mask_set[(SW_##NAME)] & opt_switches) \
+#define on(NAME) ((loongarch_switch_mask[(SW_##NAME)] & opt_switches) \
 		  && (on_switch = (SW_##NAME), 1))
   int on_switch;
 
@@ -199,7 +189,7 @@ loongarch_config_target (struct loongarch_target *target,
 	/* keep quiet */
       else if (constrained.abi_base && (t.abi.base != force_abi.base))
 	inform (UNKNOWN_LOCATION,
-		"%<-m%s%> overrides %<-m" OPTSTR_ABI_BASE "=%s%>.",
+		"%<-m%s%> overrides %<-m" OPTSTR_ABI_BASE "=%s%>",
 		loongarch_switch_strings[on_switch],
 		loongarch_abi_base_strings[t.abi.base]);
 
@@ -213,7 +203,7 @@ loongarch_config_target (struct loongarch_target *target,
 	static const struct loongarch_abi default_abi =
 	  {DEFAULT_ABI_BASE, DEFAULT_ABI_EXT};
 
-	warning (0, "ABI changed (%qs -> %qs) while multilib is disabled.",
+	warning (0, "ABI changed (%qs -> %qs) while multilib is disabled",
 		 abi_str(default_abi), abi_str(t.abi));
       }
 #endif
@@ -238,12 +228,12 @@ loongarch_config_target (struct loongarch_target *target,
   if (t.cpu_arch == CPU_NATIVE)
     fatal_error (UNKNOWN_LOCATION,
 		 "%<-m" OPTSTR_ARCH "=" STR_CPU_NATIVE "%> "
-		 "does not work on a cross compiler.");
+		 "does not work on a cross compiler");
 
   else if (t.cpu_tune == CPU_NATIVE)
     fatal_error (UNKNOWN_LOCATION,
 		 "%<-m" OPTSTR_TUNE "=" STR_CPU_NATIVE "%> "
-		 "does not work on a cross compiler.");
+		 "does not work on a cross compiler");
 #endif
 
   /* 3. Target ISA */
@@ -281,7 +271,7 @@ config_target_isa:
 	 so we adjust that first if it is not constrained.  */
       t.cpu_arch = abi_default_cpu_arch (t.abi);
       warning (0, "%s CPU architecture (%qs) does not support %qs ABI, "
-	       "falling back to %<-m" OPTSTR_ARCH "=%s%>.",
+	       "falling back to %<-m" OPTSTR_ARCH "=%s%>",
 	       (t.cpu_arch == CPU_NATIVE ? "your native" : "default"),
 	       arch_str (&t), abi_str (t.abi), arch_str (&t));
 
@@ -310,7 +300,7 @@ config_target_isa:
   if (0)
 fatal:
     fatal_error (UNKNOWN_LOCATION,
-		 "unable to implement ABI %qs with instruction set %qs.",
+		 "unable to implement ABI %qs with instruction set %qs",
 		 abi_str (t.abi), isa_str (&(t.isa), '/'));
 
 
@@ -334,7 +324,7 @@ fatal:
 
 		      warning (0, "ABI %qs cannot be implemented due to "
 			       "limited instruction set %qs, "
-			       "falling back to %qs.", abi_str (t.abi),
+			       "falling back to %qs", abi_str (t.abi),
 			       isa_str (&(t.isa), '/'), abi_str (abi_tmp));
 
 		      goto fallback;
@@ -344,12 +334,12 @@ fatal:
 	      /* Otherwise, keep using abi_tmp with a warning.  */
 #ifdef __DISABLE_MULTILIB
 	      warning (0, "instruction set %qs cannot implement "
-		       "default ABI %qs, falling back to %qs.",
+		       "default ABI %qs, falling back to %qs",
 		       isa_str (&(t.isa), '/'), abi_str (t.abi),
 		       abi_str (abi_tmp));
 #else
 	      warning (0, "no multilib-enabled ABI (%qs) can be implemented "
-		       "with instruction set %qs, falling back to %qs.",
+		       "with instruction set %qs, falling back to %qs",
 		       multilib_enabled_abi_list (),
 		       isa_str (&(t.isa), '/'), abi_str (abi_tmp));
 #endif
@@ -365,7 +355,7 @@ fallback:
 	{
 	  inform (UNKNOWN_LOCATION,
 		  "ABI %qs is not enabled at configure-time, "
-		  "the linker might report an error.", abi_str (t.abi));
+		  "the linker might report an error", abi_str (t.abi));
 
 	  inform (UNKNOWN_LOCATION, "ABI with startfiles: %s",
 		  multilib_enabled_abi_list());
@@ -542,8 +532,8 @@ arch_str (const struct loongarch_target *target)
 static const char*
 multilib_enabled_abi_list ()
 {
-  int enabled_idx[MULTILIB_LIST_LEN];
-  const char* enabled_str[MULTILIB_LIST_LEN];
+  int enabled_abi_idx[MULTILIB_LIST_LEN] = { 0 };
+  const char* enabled_abi_str[MULTILIB_LIST_LEN] = { NULL };
   unsigned int j = 0;
 
   for (unsigned int i = 0;
@@ -552,22 +542,22 @@ multilib_enabled_abi_list ()
       if (enabled_abi_types[abi_priority_list[i].base]
 	  [abi_priority_list[i].ext])
 	{
-	  enabled_idx[j++] = i;
+	  enabled_abi_idx[j++] = i;
 	}
     }
 
   for (unsigned int k = 0; k < j; k++)
     {
-      enabled_str[k] = abi_str (abi_priority_list[enabled_idx[k]]);
+      enabled_abi_str[k] = abi_str (abi_priority_list[enabled_abi_idx[k]]);
     }
 
   for (unsigned int k = 0; k < j - 1; k++)
     {
-      APPEND_STRING (enabled_str[k])
+      APPEND_STRING (enabled_abi_str[k])
       APPEND1 (',')
       APPEND1 (' ')
     }
-  APPEND_STRING (enabled_str[j - 1])
+  APPEND_STRING (enabled_abi_str[j - 1])
   APPEND1 ('\0')
 
   return XOBFINISH (&msg_obstack, const char *);

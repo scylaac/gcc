@@ -70,7 +70,7 @@ extern const char* loongarch_abi_ext_strings[];
 #define ABI_EXT_BASE          0
 #define N_ABI_EXT_TYPES       1
 
-/* enum cmodel  */
+/* enum cmodel */
 extern const char* loongarch_cmodel_strings[];
 #define CMODEL_NORMAL         0
 #define CMODEL_TINY           1
@@ -96,24 +96,24 @@ extern const char* loongarch_switch_strings[];
 /* Internal representation of the target */
 struct loongarch_isa
 {
-  unsigned int base: 2;       /* ISA_BASE_ */
-  unsigned int fpu: 2;        /* ISA_EXT_FPU_ */
+  unsigned char base;       /* ISA_BASE_ */
+  unsigned char fpu;        /* ISA_EXT_FPU_ */
 };
 
 struct loongarch_abi
 {
-  unsigned int base: 8;       /* ABI_BASE_ */
-  unsigned int ext: 8;        /* ABI_EXT_ */
+  unsigned char base;       /* ABI_BASE_ */
+  unsigned char ext;        /* ABI_EXT_ */
 };
 
 struct loongarch_target
 {
   struct loongarch_isa isa;
   struct loongarch_abi abi;
-  unsigned int cpu_arch: 8;   /* CPU_ */
-  unsigned int cpu_tune: 8;   /* same */
-  unsigned int cpu_native: 8; /* same */
-  unsigned int cmodel: 8;     /* CMODEL_ */
+  unsigned char cpu_arch;   /* CPU_ */
+  unsigned char cpu_tune;   /* same */
+  unsigned char cpu_native; /* same */
+  unsigned char cmodel;     /* CMODEL_ */
 };
 
 /* CPU properties */

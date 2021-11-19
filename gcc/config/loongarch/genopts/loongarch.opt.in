@@ -68,15 +68,15 @@ m@@OPTSTR_ISA_EXT_FPU@@=@@STR_ISA_EXT_FPU0@@
 Target RejectNegative Alias(m@@OPTSTR_ISA_EXT_FPU@@=,@@STR_ISA_EXT_NOFPU@@)
 
 m@@OPTSTR_SOFT_FLOAT@@
-Target Driver RejectNegative Var(la_opt_switches) Mask(FORCE_SOFTF)
+Target Driver RejectNegative Var(la_opt_switches) Mask(FORCE_SOFTF) Negative(m@@OPTSTR_SINGLE_FLOAT@@)
 Prevent the use of all hardware floating-point instructions.
 
 m@@OPTSTR_SINGLE_FLOAT@@
-Target Driver RejectNegative Var(la_opt_switches) Mask(FORCE_F32)
+Target Driver RejectNegative Var(la_opt_switches) Mask(FORCE_F32) Negative(m@@OPTSTR_DOUBLE_FLOAT@@)
 Restrict the use of hardware floating-point instructions to 32-bit operations.
 
 m@@OPTSTR_DOUBLE_FLOAT@@
-Target Driver RejectNegative Var(la_opt_switches) Mask(FORCE_F64)
+Target Driver RejectNegative Var(la_opt_switches) Mask(FORCE_F64) Negative(m@@OPTSTR_SOFT_FLOAT@@)
 Allow hardware floating-point instructions to cover both 32-bit and 64-bit operations.
 
 

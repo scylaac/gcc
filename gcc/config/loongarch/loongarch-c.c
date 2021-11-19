@@ -69,7 +69,7 @@ loongarch_cpu_cpp_builtins (cpp_reader *pfile)
   /* Base architecture / ABI */
   if (TARGET_64BIT)
     {
-      builtin_define ("__loongarch_gpr=64");
+      builtin_define ("__loongarch_grlen=64");
       builtin_define ("__loongarch64");
     }
 
@@ -95,11 +95,11 @@ loongarch_cpu_cpp_builtins (cpp_reader *pfile)
 
   /* ISA Extensions */
   if (TARGET_DOUBLE_FLOAT)
-    builtin_define ("__loongarch_fpr=64");
+    builtin_define ("__loongarch_frlen=64");
   else if (TARGET_SINGLE_FLOAT)
-    builtin_define ("__loongarch_fpr=32");
+    builtin_define ("__loongarch_frlen=32");
   else
-    builtin_define ("__loongarch_fpr=0");
+    builtin_define ("__loongarch_frlen=0");
 
   /* Native Data Sizes */
   builtin_define_with_int_value ("_LOONGARCH_SZINT", INT_TYPE_SIZE);

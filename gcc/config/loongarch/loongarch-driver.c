@@ -129,13 +129,8 @@ driver_set_m_flag (int argc, const char **argv)
       )
 
       if (switch_idx != M_OPTION_NOT_SEEN)
-	{
-	  opt_switches ^= loongarch_switch_mask_invert[switch_idx];
-	  opt_switches &= ~(loongarch_switch_mask_clear[switch_idx]);
-	  opt_switches |= loongarch_switch_mask_set[switch_idx];
-	}
+	opt_switches |= loongarch_switch_mask[switch_idx];
     }
-
   return "";
 }
 

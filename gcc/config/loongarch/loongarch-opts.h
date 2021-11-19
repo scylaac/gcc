@@ -26,9 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 extern struct loongarch_target la_target;
 
 /* Switch masks */
-extern const int loongarch_switch_mask_set[];
-extern const int loongarch_switch_mask_clear[];
-extern const int loongarch_switch_mask_invert[];
+extern const int loongarch_switch_mask[];
 
 #ifdef IN_LIBGCC2
 #include "loongarch-def.h"

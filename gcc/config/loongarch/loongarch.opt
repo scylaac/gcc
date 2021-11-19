@@ -68,15 +68,15 @@ mfpu=0
 Target RejectNegative Alias(mfpu=,none)
 
 msoft-float
-Target Driver RejectNegative Var(la_opt_switches) Mask(FORCE_SOFTF)
+Target Driver RejectNegative Var(la_opt_switches) Mask(FORCE_SOFTF) Negative(msingle-float)
 Prevent the use of all hardware floating-point instructions.
 
 msingle-float
-Target Driver RejectNegative Var(la_opt_switches) Mask(FORCE_F32)
+Target Driver RejectNegative Var(la_opt_switches) Mask(FORCE_F32) Negative(mdouble-float)
 Restrict the use of hardware floating-point instructions to 32-bit operations.
 
 mdouble-float
-Target Driver RejectNegative Var(la_opt_switches) Mask(FORCE_F64)
+Target Driver RejectNegative Var(la_opt_switches) Mask(FORCE_F64) Negative(msoft-float)
 Allow hardware floating-point instructions to cover both 32-bit and 64-bit operations.
 
 
