@@ -43,6 +43,9 @@ along with GCC; see the file COPYING3.  If not see
       index defined in loongarch-cpu.h.
 */
 
+#ifndef LOONGARCH_DEF_H
+#define LOONGARCH_DEF_H
+
 #include "loongarch-tune.h"
 
 /* enum isa_base */
@@ -80,6 +83,11 @@ extern const char* loongarch_cmodel_strings[];
 #define N_CMODEL_TYPES        5
 
 /* enum switches */
+/* The "SW_" codes represent command-line switches (options that
+   accept no parameters). Definition for other switches that affects
+   the target ISA / ABI configuration will also be appended here
+   in the future.  */
+
 extern const char* loongarch_switch_strings[];
 #define SW_SOFT_FLOAT         0
 #define SW_SINGLE_FLOAT       1
@@ -133,3 +141,4 @@ extern int loongarch_cpu_multipass_dfa_lookahead[];
 extern struct loongarch_cache loongarch_cpu_cache[];
 extern struct loongarch_rtx_cost_data loongarch_cpu_rtx_cost_data[];
 
+#endif /* LOONGARCH_DEF_H */

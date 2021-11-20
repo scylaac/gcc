@@ -1,4 +1,4 @@
-/* Definitions for LoongArch running Linux-based GNU systems with ELF format.
+/* Definitions for Linux-based systems with libraries in ELF format.
    Copyright (C) 2021 Free Software Foundation, Inc.
 
 This file is part of GCC.

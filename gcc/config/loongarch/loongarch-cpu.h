@@ -17,8 +17,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef LOONGARCH_CPUCFG_H
-#define LOONGARCH_CPUCFG_H
+#ifndef LOONGARCH_CPU_H
+#define LOONGARCH_CPU_H
 
 #include "system.h"
 
@@ -27,4 +27,4 @@ unsigned int fill_native_cpu_config (int p_arch_native, int p_tune_native);
 uint32_t get_native_prid (void);
 const char* get_native_prid_str (void);
 
-#endif /* LOONGARCH_CPUCFG_H */
+#endif /* LOONGARCH_CPU_H */
