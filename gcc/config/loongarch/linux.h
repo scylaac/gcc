@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #if defined(__DISABLE_MULTILIB) && defined(__DISABLE_MULTIARCH)
 
-  /* Integer ABI */
   #if DEFAULT_ABI_INT == ABI_BASE_LP64D
     #define ABI_SUFFIX "lib64"
   #elif DEFAULT_ABI_INT == ABI_BASE_LP64F
@@ -31,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
   #elif DEFAULT_ABI_INT == ABI_BASE_LP64S
     #define ABI_SUFFIX "lib64/sf"
   #endif
+
 #endif
 
 #ifndef ABI_SUFFIX

@@ -46,7 +46,7 @@ abi_priority_list[] = {
 #ifdef __DISABLE_MULTILIB
 #define MULTILIB_LIST_LEN 1
 #else
-#define MULTILIB_LIST_LEN (sizeof(tm_multilib_list)/sizeof(int)/2)
+#define MULTILIB_LIST_LEN (sizeof (tm_multilib_list) / sizeof (int) / 2)
 static const int tm_multilib_list[] = { TM_MULTILIB_LIST };
 #endif
 static int enabled_abi_types[N_ABI_BASE_TYPES][N_ABI_EXT_TYPES] = { 0 };
@@ -67,8 +67,13 @@ init_enabled_abi_types ()
 #ifdef __DISABLE_MULTILIB
   enabled_abi_types[DEFAULT_ABI_BASE][DEFAULT_ABI_EXT] = 1;
 #else
-  for (unsigned int i = 0; i < MULTILIB_LIST_LEN; i ++)
-    enabled_abi_types[tm_multilib_list[i<<1]][tm_multilib_list[(i<<1)+1]] = 1;
+  int abi_base, abi_ext;
+  for (unsigned int i = 0; i < MULTILIB_LIST_LEN; i++)
+    {
+      abi_base = tm_multilib_list[i << 1];
+      abi_ext = tm_multilib_list[(i << 1) + 1];
+      enabled_abi_types[abi_base][abi_ext] = 1;
+    }
 #endif
 }
 
@@ -204,7 +209,7 @@ loongarch_config_target (struct loongarch_target *target,
 	  {DEFAULT_ABI_BASE, DEFAULT_ABI_EXT};
 
 	warning (0, "ABI changed (%qs -> %qs) while multilib is disabled",
-		 abi_str(default_abi), abi_str(t.abi));
+		 abi_str (default_abi), abi_str (t.abi));
       }
 #endif
 
@@ -261,7 +266,7 @@ config_target_isa:
   struct loongarch_isa isa_tmp;
 
   abi_tmp = t.abi;
-  isa_min = &(isa_required(abi_tmp));
+  isa_min = &(isa_required (abi_tmp));
   isa_tmp = t.isa;
 
   if (isa_base_compat_p (&isa_tmp, isa_min)); /* OK */
@@ -358,7 +363,7 @@ fallback:
 		  "the linker might report an error", abi_str (t.abi));
 
 	  inform (UNKNOWN_LOCATION, "ABI with startfiles: %s",
-		  multilib_enabled_abi_list());
+		  multilib_enabled_abi_list ());
 	}
     }
 
@@ -395,7 +400,7 @@ isa_default_abi (const struct loongarch_isa *isa)
 	break;
 
       default:
-	gcc_unreachable();
+	gcc_unreachable ();
     }
 
   abi.ext = ABI_EXT_BASE;
@@ -413,7 +418,7 @@ isa_base_compat_p (const struct loongarch_isa *set1,
 	return (set1 -> base == ISA_BASE_LA64V100);
 
       default:
-	gcc_unreachable();
+	gcc_unreachable ();
     }
 }
 
@@ -430,7 +435,7 @@ isa_fpu_compat_p (const struct loongarch_isa *set1,
       case ISA_EXT_NOFPU:
 	return 1;
       default:
-	gcc_unreachable();
+	gcc_unreachable ();
     }
 
 }
@@ -439,7 +444,7 @@ static inline int
 abi_compat_p (const struct loongarch_isa *isa, struct loongarch_abi abi)
 {
   int compatible = 1;
-  const struct loongarch_isa *isa2 = &(isa_required(abi));
+  const struct loongarch_isa *isa2 = &(isa_required (abi));
 
   /* Append conditionals for new ISA components below.  */
   compatible = compatible && isa_base_compat_p (isa, isa2);
@@ -460,7 +465,7 @@ abi_default_cpu_arch (struct loongarch_abi abi)
 	if (abi.ext == ABI_EXT_BASE)
 	  return CPU_LOONGARCH64;
     }
-  gcc_unreachable();
+  gcc_unreachable ();
 }
 
 static const char*

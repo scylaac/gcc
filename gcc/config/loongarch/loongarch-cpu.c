@@ -158,7 +158,7 @@ fill_native_cpu_config (int p_arch_native, int p_tune_native)
   l2_szword = l2d_present ? cpucfg_cache[19]: 0;
 
   loongarch_cpu_cache[CPU_NATIVE].l1d_line_size
-    = 1 << ((l1_szword & 0x7f000000) >> 24);  /* bit[30:24]: log2(linesize) */
+    = 1 << ((l1_szword & 0x7f000000) >> 24);   /* bit[30:24]: log2(linesize) */
 
   loongarch_cpu_cache[CPU_NATIVE].l1d_size
     = (1 << ((l1_szword & 0x00ff0000) >> 16))  /* bit[23:16]: log2(idx) */
