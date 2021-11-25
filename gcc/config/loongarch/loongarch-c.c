@@ -83,14 +83,14 @@ loongarch_cpu_cpp_builtins (cpp_reader *pfile)
   /* These defines reflect the ABI in use, not whether the
      FPU is directly accessible.  */
   if (TARGET_DOUBLE_FLOAT_ABI)
-    builtin_define ("__loongarch_double_float");
+    builtin_define ("__loongarch_double_float=1");
   else if (TARGET_SINGLE_FLOAT_ABI)
-    builtin_define ("__loongarch_single_float");
+    builtin_define ("__loongarch_single_float=1");
 
   if (TARGET_DOUBLE_FLOAT_ABI || TARGET_SINGLE_FLOAT_ABI)
-    builtin_define ("__loongarch_hard_float");
+    builtin_define ("__loongarch_hard_float=1");
   else
-    builtin_define ("__loongarch_soft_float");
+    builtin_define ("__loongarch_soft_float=1");
 
 
   /* ISA Extensions */
