@@ -24,21 +24,21 @@ along with GCC; see the file COPYING3.  If not see
 #if defined(__DISABLE_MULTILIB) && defined(__DISABLE_MULTIARCH)
 
   #if DEFAULT_ABI_INT == ABI_BASE_LP64D
-    #define ABI_SUFFIX "lib64"
+    #define ABI_LIBDIR "lib64"
   #elif DEFAULT_ABI_INT == ABI_BASE_LP64F
-    #define ABI_SUFFIX "lib64/f32"
+    #define ABI_LIBDIR "lib64/f32"
   #elif DEFAULT_ABI_INT == ABI_BASE_LP64S
-    #define ABI_SUFFIX "lib64/sf"
+    #define ABI_LIBDIR "lib64/sf"
   #endif
 
 #endif
 
-#ifndef ABI_SUFFIX
-#define ABI_SUFFIX "lib"
+#ifndef ABI_LIBDIR
+#define ABI_LIBDIR "lib"
 #endif
 
-#define STANDARD_STARTFILE_PREFIX_1 "/" ABI_SUFFIX "/"
-#define STANDARD_STARTFILE_PREFIX_2 "/usr/" ABI_SUFFIX "/"
+#define STANDARD_STARTFILE_PREFIX_1 "/" ABI_LIBDIR "/"
+#define STANDARD_STARTFILE_PREFIX_2 "/usr/" ABI_LIBDIR "/"
 
 
 /* Define this to be nonzero if static stack checking is supported.  */
