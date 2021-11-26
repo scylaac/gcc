@@ -431,10 +431,13 @@ isa_fpu_compat_p (const struct loongarch_isa *set1,
     {
       case ISA_EXT_FPU64:
 	return set1 -> fpu == ISA_EXT_FPU64;
+
       case ISA_EXT_FPU32:
 	return set1 -> fpu == ISA_EXT_FPU32 || set1 -> fpu == ISA_EXT_FPU64;
+
       case ISA_EXT_NOFPU:
 	return 1;
+
       default:
 	gcc_unreachable ();
     }
