@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 
 struct loongarch_target la_target;
 
-/* ABI-related configuration */
+/* ABI-related configuration.  */
 #define ABI_COUNT (sizeof(abi_priority_list)/sizeof(struct loongarch_abi))
 static const struct loongarch_abi
 abi_priority_list[] = {
@@ -77,7 +77,7 @@ init_enabled_abi_types ()
 #endif
 }
 
-/* Switch masks */
+/* Switch masks.  */
 #undef M
 #define M(NAME) OPTION_MASK_##NAME
 const int loongarch_switch_mask[N_SWITCH_TYPES] = {
@@ -87,7 +87,7 @@ const int loongarch_switch_mask[N_SWITCH_TYPES] = {
 };
 #undef M
 
-/* String processing */
+/* String processing.  */
 static struct obstack msg_obstack;
 #define APPEND_STRING(STR) obstack_grow (&msg_obstack, STR, strlen(STR));
 #define APPEND1(CH) obstack_1grow(&msg_obstack, CH);
@@ -99,12 +99,15 @@ static const char* multilib_enabled_abi_list ();
 
 /* Misc */
 static struct loongarch_abi isa_default_abi (const struct loongarch_isa *isa);
-static int isa_base_compat_p (const struct loongarch_isa *set1, const struct loongarch_isa *set2);
-static int isa_fpu_compat_p (const struct loongarch_isa *set1, const struct loongarch_isa *set2);
-static int abi_compat_p (const struct loongarch_isa *isa, struct loongarch_abi abi);
+static int isa_base_compat_p (const struct loongarch_isa *set1,
+			      const struct loongarch_isa *set2);
+static int isa_fpu_compat_p (const struct loongarch_isa *set1,
+			     const struct loongarch_isa *set2);
+static int abi_compat_p (const struct loongarch_isa *isa,
+			 struct loongarch_abi abi);
 static int abi_default_cpu_arch (struct loongarch_abi abi);
 
-/* Checking configure-time defaults */
+/* Checking configure-time defaults.  */
 #ifndef DEFAULT_ABI_BASE
 #error missing definition of DEFAULT_ABI_BASE in ${tm_defines}.
 #endif
@@ -121,14 +124,14 @@ static int abi_default_cpu_arch (struct loongarch_abi abi);
 #error missing definition of DEFAULT_ISA_EXT_FPU in ${tm_defines}.
 #endif
 
-/* Handle combinations of -m machine option values.
-   (see loongarch.opt and loongarch-opts.h) */
+/* Handle combinations of -m machine option values
+   (see loongarch.opt and loongarch-opts.h).  */
 void
 loongarch_config_target (struct loongarch_target *target,
-  HOST_WIDE_INT opt_switches,
-  int opt_arch, int opt_tune, int opt_fpu,
-  int opt_abi_base, int opt_abi_ext,
-  int opt_cmodel, int follow_multilib_list)
+			 HOST_WIDE_INT opt_switches,
+			 int opt_arch, int opt_tune, int opt_fpu,
+			 int opt_abi_base, int opt_abi_ext,
+			 int opt_cmodel, int follow_multilib_list)
 {
   struct loongarch_target t;
 
@@ -154,14 +157,12 @@ loongarch_config_target (struct loongarch_target *target,
 		  && (on_switch = (SW_##NAME), 1))
   int on_switch;
 
-  /* 1. Target ABI */
-  t.abi.base = constrained.abi_base ?
-    opt_abi_base : DEFAULT_ABI_BASE;
+  /* 1.  Target ABI */
+  t.abi.base = constrained.abi_base ? opt_abi_base : DEFAULT_ABI_BASE;
 
-  t.abi.ext = constrained.abi_ext ?
-    opt_abi_ext : DEFAULT_ABI_EXT;
+  t.abi.ext = constrained.abi_ext ? opt_abi_ext : DEFAULT_ABI_EXT;
 
-  /* extra switch handling */
+  /* Extra switch handling.  */
   if (on (SOFT_FLOAT) || on (SINGLE_FLOAT) || on (DOUBLE_FLOAT))
     {
       switch (on_switch)
@@ -205,17 +206,16 @@ loongarch_config_target (struct loongarch_target *target,
   if (follow_multilib_list)
     if (t.abi.base != DEFAULT_ABI_BASE || t.abi.ext != DEFAULT_ABI_EXT)
       {
-	static const struct loongarch_abi default_abi =
-	  {DEFAULT_ABI_BASE, DEFAULT_ABI_EXT};
+	static const struct loongarch_abi default_abi
+	  = {DEFAULT_ABI_BASE, DEFAULT_ABI_EXT};
 
 	warning (0, "ABI changed (%qs -> %qs) while multilib is disabled",
 		 abi_str (default_abi), abi_str (t.abi));
       }
 #endif
 
-  /* 2. Target CPU */
-  t.cpu_arch = constrained.arch ?
-    opt_arch : DEFAULT_CPU_ARCH;
+  /* 2.  Target CPU */
+  t.cpu_arch = constrained.arch ? opt_arch : DEFAULT_CPU_ARCH;
 
   t.cpu_tune = constrained.tune ? opt_tune
     : (constrained.arch ? DEFAULT_CPU_ARCH : DEFAULT_CPU_TUNE);
@@ -225,9 +225,8 @@ loongarch_config_target (struct loongarch_target *target,
      and fill the "CPU_NATIVE" index of arrays defined in
      loongarch-cpu.c.  */
 
-  t.cpu_native =
-    fill_native_cpu_config (t.cpu_arch == CPU_NATIVE,
-			    t.cpu_tune == CPU_NATIVE);
+  t.cpu_native = fill_native_cpu_config (t.cpu_arch == CPU_NATIVE,
+					 t.cpu_tune == CPU_NATIVE);
 
 #else
   if (t.cpu_arch == CPU_NATIVE)
@@ -241,7 +240,7 @@ loongarch_config_target (struct loongarch_target *target,
 		 "does not work on a cross compiler");
 #endif
 
-  /* 3. Target ISA */
+  /* 3.  Target ISA */
 config_target_isa:
 
   /* Get default ISA from "-march" or its default value.  */
@@ -254,7 +253,7 @@ config_target_isa:
      t.isa.fpu : DEFAULT_ISA_EXT_FPU);
 
 
-  /* 4. ABI-ISA compatibility */
+  /* 4.  ABI-ISA compatibility */
   /* Note:
      - There IS a unique default -march value for each ABI type
        (config.gcc: triplet -> abi -> default arch).
@@ -370,7 +369,7 @@ fallback:
     }
 
 
-  /* 5. Target code model */
+  /* 5.  Target code model */
   t.cmodel = constrained.cmodel ? opt_cmodel : CMODEL_NORMAL;
 
   /* cleanup and return */
@@ -378,7 +377,7 @@ fallback:
   *target = t;
 }
 
-/* Returns the default ABI for the given instruction set. */
+/* Returns the default ABI for the given instruction set.  */
 static inline struct loongarch_abi
 isa_default_abi (const struct loongarch_isa *isa)
 {
@@ -543,8 +542,7 @@ multilib_enabled_abi_list ()
   const char* enabled_abi_str[MULTILIB_LIST_LEN] = { NULL };
   unsigned int j = 0;
 
-  for (unsigned int i = 0;
-       i < ABI_COUNT && j < MULTILIB_LIST_LEN; i++)
+  for (unsigned int i = 0; i < ABI_COUNT && j < MULTILIB_LIST_LEN; i++)
     {
       if (enabled_abi_types[abi_priority_list[i].base]
 	  [abi_priority_list[i].ext])

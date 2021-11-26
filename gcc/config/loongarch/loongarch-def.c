@@ -21,12 +21,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "loongarch-def.h"
 #include "loongarch-str.h"
 
-/* CPU property tables */
+/* CPU property tables.  */
 const char*
 loongarch_cpu_strings[N_TUNE_TYPES] = {
-  [CPU_NATIVE]            = STR_CPU_NATIVE,
-  [CPU_LOONGARCH64]       = STR_CPU_LOONGARCH64,
-  [CPU_LA464]             = STR_CPU_LA464,
+  [CPU_NATIVE]		  = STR_CPU_NATIVE,
+  [CPU_LOONGARCH64]	  = STR_CPU_LOONGARCH64,
+  [CPU_LA464]		  = STR_CPU_LA464,
 };
 
 struct loongarch_isa
@@ -75,16 +75,16 @@ loongarch_cpu_rtx_cost_data[N_TUNE_TYPES] = {
 
 int
 loongarch_cpu_issue_rate[N_TUNE_TYPES] = {
-  [CPU_NATIVE]        = 4,
+  [CPU_NATIVE]	      = 4,
   [CPU_LOONGARCH64]   = 4,
-  [CPU_LA464]         = 4,
+  [CPU_LA464]	      = 4,
 };
 
 int
 loongarch_cpu_multipass_dfa_lookahead[N_TUNE_TYPES] = {
-  [CPU_NATIVE]        = 4,
+  [CPU_NATIVE]	      = 4,
   [CPU_LOONGARCH64]   = 4,
-  [CPU_LA464]         = 4,
+  [CPU_LA464]	      = 4,
 };
 
 /* Wiring string definitions from loongarch-str.h to global arrays
@@ -118,22 +118,22 @@ loongarch_abi_ext_strings[N_ABI_EXT_TYPES] = {
 
 const char*
 loongarch_cmodel_strings[] = {
-  [CMODEL_NORMAL]        = STR_CMODEL_NORMAL,
-  [CMODEL_TINY]          = STR_CMODEL_TINY,
-  [CMODEL_TINY_STATIC]   = STR_CMODEL_TS,
-  [CMODEL_LARGE]         = STR_CMODEL_LARGE,
-  [CMODEL_EXTREME]       = STR_CMODEL_EXTREME,
+  [CMODEL_NORMAL]	  = STR_CMODEL_NORMAL,
+  [CMODEL_TINY]		  = STR_CMODEL_TINY,
+  [CMODEL_TINY_STATIC]	  = STR_CMODEL_TS,
+  [CMODEL_LARGE]	  = STR_CMODEL_LARGE,
+  [CMODEL_EXTREME]	  = STR_CMODEL_EXTREME,
 };
 
 const char*
 loongarch_switch_strings[] = {
-  [SW_SOFT_FLOAT]        = OPTSTR_SOFT_FLOAT,
-  [SW_SINGLE_FLOAT]      = OPTSTR_SINGLE_FLOAT,
-  [SW_DOUBLE_FLOAT]      = OPTSTR_DOUBLE_FLOAT,
+  [SW_SOFT_FLOAT]	  = OPTSTR_SOFT_FLOAT,
+  [SW_SINGLE_FLOAT]	  = OPTSTR_SINGLE_FLOAT,
+  [SW_DOUBLE_FLOAT]	  = OPTSTR_DOUBLE_FLOAT,
 };
 
 
-/* ABI-related definitions */
+/* ABI-related definitions.  */
 const struct loongarch_isa
 abi_minimal_isa[N_ABI_BASE_TYPES][N_ABI_EXT_TYPES] = {
   [ABI_BASE_LP64D] = {

@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #define WCHAR_TYPE_SIZE 32
 
 
-/* GNU-specific SPEC definitions */
+/* GNU-specific SPEC definitions.  */
 #define GNU_USER_LINK_EMULATION "elf" ABI_GRLEN_SPEC "loongarch"
 
 #define GLIBC_DYNAMIC_LINKER \

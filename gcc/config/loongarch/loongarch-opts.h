@@ -47,44 +47,44 @@ loongarch_config_target (struct loongarch_target *target,
 
 
 /* Macros for common conditional expressions used in loongarch.{c,h,md} */
-#define TARGET_CMODEL_NORMAL        (la_target.cmodel == CMODEL_NORMAL)
-#define TARGET_CMODEL_TINY          (la_target.cmodel == CMODEL_TINY)
+#define TARGET_CMODEL_NORMAL	    (la_target.cmodel == CMODEL_NORMAL)
+#define TARGET_CMODEL_TINY	    (la_target.cmodel == CMODEL_TINY)
 #define TARGET_CMODEL_TINY_STATIC   (la_target.cmodel == CMODEL_TINY_STATIC)
-#define TARGET_CMODEL_LARGE         (la_target.cmodel == CMODEL_LARGE)
-#define TARGET_CMODEL_EXTREME       (la_target.cmodel == CMODEL_EXTREME)
+#define TARGET_CMODEL_LARGE	    (la_target.cmodel == CMODEL_LARGE)
+#define TARGET_CMODEL_EXTREME	    (la_target.cmodel == CMODEL_EXTREME)
 
-#define TARGET_HARD_FLOAT        (la_target.isa.fpu != ISA_EXT_NOFPU)
-#define TARGET_HARD_FLOAT_ABI    (la_target.abi.base == ABI_BASE_LP64D \
-				  || la_target.abi.base == ABI_BASE_LP64F)
+#define TARGET_HARD_FLOAT	    (la_target.isa.fpu != ISA_EXT_NOFPU)
+#define TARGET_HARD_FLOAT_ABI	    (la_target.abi.base == ABI_BASE_LP64D \
+				     || la_target.abi.base == ABI_BASE_LP64F)
 
-#define TARGET_SOFT_FLOAT        (la_target.isa.fpu == ISA_EXT_NOFPU)
-#define TARGET_SOFT_FLOAT_ABI    (la_target.abi.base == ABI_BASE_LP64S)
-#define TARGET_SINGLE_FLOAT      (la_target.isa.fpu == ISA_EXT_FPU32)
-#define TARGET_SINGLE_FLOAT_ABI  (la_target.abi.base == ABI_BASE_LP64F)
-#define TARGET_DOUBLE_FLOAT      (la_target.isa.fpu == ISA_EXT_FPU64)
-#define TARGET_DOUBLE_FLOAT_ABI  (la_target.abi.base == ABI_BASE_LP64D)
+#define TARGET_SOFT_FLOAT	  (la_target.isa.fpu == ISA_EXT_NOFPU)
+#define TARGET_SOFT_FLOAT_ABI	  (la_target.abi.base == ABI_BASE_LP64S)
+#define TARGET_SINGLE_FLOAT	  (la_target.isa.fpu == ISA_EXT_FPU32)
+#define TARGET_SINGLE_FLOAT_ABI	  (la_target.abi.base == ABI_BASE_LP64F)
+#define TARGET_DOUBLE_FLOAT	  (la_target.isa.fpu == ISA_EXT_FPU64)
+#define TARGET_DOUBLE_FLOAT_ABI	  (la_target.abi.base == ABI_BASE_LP64D)
 
-#define TARGET_64BIT             (la_target.isa.base == ISA_BASE_LA64V100)
-#define TARGET_ABI_LP64          (la_target.abi.base == ABI_BASE_LP64D \
-				  || la_target.abi.base == ABI_BASE_LP64F \
-				  || la_target.abi.base == ABI_BASE_LP64S)
+#define TARGET_64BIT		  (la_target.isa.base == ISA_BASE_LA64V100)
+#define TARGET_ABI_LP64		  (la_target.abi.base == ABI_BASE_LP64D \
+				   || la_target.abi.base == ABI_BASE_LP64F \
+				   || la_target.abi.base == ABI_BASE_LP64S)
 
-#define TARGET_ARCH_NATIVE       (la_target.cpu_arch == CPU_NATIVE)
-#define __ACTUAL_ARCH            (TARGET_ARCH_NATIVE ? \
-				  (la_target.cpu_native < N_ARCH_TYPES ? \
-				   (la_target.cpu_native) : (CPU_NATIVE)) \
-				  : (la_target.cpu_arch))
+#define TARGET_ARCH_NATIVE	  (la_target.cpu_arch == CPU_NATIVE)
+#define __ACTUAL_ARCH		  (TARGET_ARCH_NATIVE \
+				   ? (la_target.cpu_native < N_ARCH_TYPES \
+				      ? (la_target.cpu_native) : (CPU_NATIVE)) \
+				      : (la_target.cpu_arch))
 
-#define TARGET_TUNE_NATIVE       (la_target.cpu_tune == CPU_NATIVE)
-#define __ACTUAL_TUNE            (TARGET_TUNE_NATIVE ? \
-				  (la_target.cpu_native < N_TUNE_TYPES ? \
-				   (la_target.cpu_native) : (CPU_NATIVE)) \
-				  : (la_target.cpu_tune))
+#define TARGET_TUNE_NATIVE	(la_target.cpu_tune == CPU_NATIVE)
+#define __ACTUAL_TUNE		(TARGET_TUNE_NATIVE \
+				 ? (la_target.cpu_native < N_TUNE_TYPES \
+				    ? (la_target.cpu_native) : (CPU_NATIVE)) \
+				    : (la_target.cpu_tune))
 
-#define TARGET_ARCH_LOONGARCH64  (__ACTUAL_ARCH == CPU_LOONGARCH64)
-#define TARGET_ARCH_LA464        (__ACTUAL_ARCH == CPU_LA464)
+#define TARGET_ARCH_LOONGARCH64	  (__ACTUAL_ARCH == CPU_LOONGARCH64)
+#define TARGET_ARCH_LA464	  (__ACTUAL_ARCH == CPU_LA464)
 
-#define TARGET_TUNE_LOONGARCH64  (__ACTUAL_TUNE == CPU_LOONGARCH64)
-#define TARGET_TUNE_LA464        (__ACTUAL_TUNE == CPU_LA464)
+#define TARGET_TUNE_LOONGARCH64	  (__ACTUAL_TUNE == CPU_LOONGARCH64)
+#define TARGET_TUNE_LA464	  (__ACTUAL_TUNE == CPU_LA464)
 
 #endif /* LOONGARCH_OPTS_H */

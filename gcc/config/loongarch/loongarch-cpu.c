@@ -57,8 +57,8 @@ cache_cpucfg (void)
 {
   for (unsigned int i = 0; i < sizeof (cpucfg_useful_idx) / sizeof (int); i++)
     {
-      cpucfg_cache[cpucfg_useful_idx[i]] =
-	read_cpucfg_word (cpucfg_useful_idx[i]);
+      cpucfg_cache[cpucfg_useful_idx[i]]
+	= read_cpucfg_word (cpucfg_useful_idx[i]);
     }
 }
 
@@ -140,7 +140,7 @@ fill_native_cpu_config (int p_arch_native, int p_tune_native)
 		       cpucfg_cache[2] & 0x7);
     }
 
-  /* Fill: loongarch_cpu_cache [CPU_NATIVE]
+  /* Fill: loongarch_cpu_cache[CPU_NATIVE]
      With: cache size info
      At:   cpucfg_words[16:20][31:0] */
 
@@ -148,29 +148,29 @@ fill_native_cpu_config (int p_arch_native, int p_tune_native)
   int l2d_present = 0;
   uint32_t l1_szword, l2_szword;
 
-  l1u_present |= cpucfg_cache[16] & 3;         /* bit[1:0]: unified l1 cache */
-  l1d_present |= cpucfg_cache[16] & 4;         /* bit[2:2]: l1 dcache */
+  l1u_present |= cpucfg_cache[16] & 3;	      /* bit[1:0]: unified l1 cache */
+  l1d_present |= cpucfg_cache[16] & 4;	      /* bit[2:2]: l1 dcache */
   l1_szword = l1d_present ? 18 : (l1u_present ? 17 : 0);
   l1_szword = l1_szword ? cpucfg_cache[l1_szword]: 0;
 
-  l2d_present |= cpucfg_cache[16] & 24;        /* bit[4:3]: unified l2 cache */
-  l2d_present |= cpucfg_cache[16] & 128;       /* bit[7:7]: l2 dcache */
+  l2d_present |= cpucfg_cache[16] & 24;	      /* bit[4:3]: unified l2 cache */
+  l2d_present |= cpucfg_cache[16] & 128;      /* bit[7:7]: l2 dcache */
   l2_szword = l2d_present ? cpucfg_cache[19]: 0;
 
   loongarch_cpu_cache[CPU_NATIVE].l1d_line_size
-    = 1 << ((l1_szword & 0x7f000000) >> 24);   /* bit[30:24]: log2(linesize) */
+    = 1 << ((l1_szword & 0x7f000000) >> 24);  /* bit[30:24]: log2(linesize) */
 
   loongarch_cpu_cache[CPU_NATIVE].l1d_size
-    = (1 << ((l1_szword & 0x00ff0000) >> 16))  /* bit[23:16]: log2(idx) */
-    * ((l1_szword & 0x0000ffff) + 1)           /* bit[15:0]:  sets - 1 */
-    * (1 << ((l1_szword & 0x7f000000) >> 24))  /* bit[30:24]: log2(linesize) */
-    >> 10;                                     /* in kilobytes */
+    = (1 << ((l1_szword & 0x00ff0000) >> 16)) /* bit[23:16]: log2(idx) */
+    * ((l1_szword & 0x0000ffff) + 1)	      /* bit[15:0]:  sets - 1 */
+    * (1 << ((l1_szword & 0x7f000000) >> 24)) /* bit[30:24]: log2(linesize) */
+    >> 10;				      /* in kilobytes */
 
   loongarch_cpu_cache[CPU_NATIVE].l2d_size
-    = (1 << ((l2_szword & 0x00ff0000) >> 16))  /* bit[23:16]: log2(idx) */
-    * ((l2_szword & 0x0000ffff) + 1)           /* bit[15:0]:  sets - 1 */
-    * (1 << ((l2_szword & 0x7f000000) >> 24))  /* bit[30:24]: log2(linesize) */
-    >> 10;                                     /* in kilobytes */
+    = (1 << ((l2_szword & 0x00ff0000) >> 16)) /* bit[23:16]: log2(idx) */
+    * ((l2_szword & 0x0000ffff) + 1)	      /* bit[15:0]:  sets - 1 */
+    * (1 << ((l2_szword & 0x7f000000) >> 24)) /* bit[30:24]: log2(linesize) */
+    >> 10;				      /* in kilobytes */
 
   /* Fill: ret_cpu_type
      With: processor ID (PRID)
@@ -183,7 +183,7 @@ fill_native_cpu_config (int p_arch_native, int p_tune_native)
       break;
 
     default:
-      /* Unknown PRID. This is generally harmless as long as
+      /* Unknown PRID.  This is generally harmless as long as
 	 the properties above can be obtained via "cpucfg".  */
       if (p_tune_native)
 	inform (UNKNOWN_LOCATION, "Unknown processor ID %<0x%x%>, "
@@ -192,15 +192,15 @@ fill_native_cpu_config (int p_arch_native, int p_tune_native)
       break;
   }
 
-  /* Properties that cannot be looked up directly using cpucfg. */
-  loongarch_cpu_issue_rate [CPU_NATIVE]
-    = loongarch_cpu_issue_rate [ret_cpu_type];
+  /* Properties that cannot be looked up directly using cpucfg.  */
+  loongarch_cpu_issue_rate[CPU_NATIVE]
+    = loongarch_cpu_issue_rate[ret_cpu_type];
 
-  loongarch_cpu_multipass_dfa_lookahead [CPU_NATIVE]
-    = loongarch_cpu_multipass_dfa_lookahead [ret_cpu_type];
+  loongarch_cpu_multipass_dfa_lookahead[CPU_NATIVE]
+    = loongarch_cpu_multipass_dfa_lookahead[ret_cpu_type];
 
-  loongarch_cpu_rtx_cost_data [CPU_NATIVE]
-    = loongarch_cpu_rtx_cost_data [ret_cpu_type];
+  loongarch_cpu_rtx_cost_data[CPU_NATIVE]
+    = loongarch_cpu_rtx_cost_data[ret_cpu_type];
 
   return ret_cpu_type;
 }

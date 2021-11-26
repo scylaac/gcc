@@ -23474,15 +23474,15 @@ Set base ABI to one of: @gol
 @table @samp
 @item lp64d
 Uses 64-bit general purpose registers and 32/64-bit floating-point
-registers for parameter passing. Data model is LP64, where int
+registers for parameter passing.  Data model is LP64, where int
 is 32 bits, while long int and pointers are 64 bits.
 @item lp64f
 Uses 64-bit general purpose registers and 32-bit floating-point
-registers for parameter passing. Data model is LP64, where int
+registers for parameter passing.  Data model is LP64, where int
 is 32 bits, while long int and pointers are 64 bits.
 @item lp64s
 Uses 64-bit general purpose registers and no floating-point
-registers for parameter passing. Data model is LP64, where int
+registers for parameter passing.  Data model is LP64, where int
 is 32 bits, while long int and pointers are 64 bits.
 @end table
 
@@ -23506,19 +23506,19 @@ Prevent the use of hardware floating-point instructions.
 @item -msoft-float
 @opindex msoft-float
 Force @option{-mfpu=none} and prevents the use of floating-point
-registers for parameter passing. This option may change the target
+registers for parameter passing.  This option may change the target
 ABI.
 
 @item -msingle-float
 @opindex -msingle-float
 Force @option{-mfpu=32} and allow the use of 32-bit floating-point
-registers for parameter passing. This option may change the target
+registers for parameter passing.  This option may change the target
 ABI.
 
 @item -mdouble-float
 @opindex -mdouble-float
 Force @option{-mfpu=64} and allow the use of 32/64-bit floating-point
-registers for parameter passing. This option may change the target
+registers for parameter passing.  This option may change the target
 ABI.
 
 

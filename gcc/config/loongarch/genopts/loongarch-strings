@@ -19,40 +19,40 @@
 # <http://www.gnu.org/licenses/>.
 
 # -march= / -mtune=
-OPTSTR_ARCH            arch
-OPTSTR_TUNE            tune
+OPTSTR_ARCH	      arch
+OPTSTR_TUNE	      tune
 
-STR_CPU_NATIVE         native
-STR_CPU_LOONGARCH64    loongarch64
-STR_CPU_LA464          la464
+STR_CPU_NATIVE	      native
+STR_CPU_LOONGARCH64   loongarch64
+STR_CPU_LA464	      la464
 
 # Base architecture
-STR_ISA_BASE_LA64V100  la64
+STR_ISA_BASE_LA64V100 la64
 
 # -mfpu
-OPTSTR_ISA_EXT_FPU     fpu
-STR_ISA_EXT_NOFPU      none
-STR_ISA_EXT_FPU0       0
-STR_ISA_EXT_FPU32      32
-STR_ISA_EXT_FPU64      64
+OPTSTR_ISA_EXT_FPU    fpu
+STR_ISA_EXT_NOFPU     none
+STR_ISA_EXT_FPU0      0
+STR_ISA_EXT_FPU32     32
+STR_ISA_EXT_FPU64     64
 
-OPTSTR_SOFT_FLOAT      soft-float
-OPTSTR_SINGLE_FLOAT    single-float
-OPTSTR_DOUBLE_FLOAT    double-float
+OPTSTR_SOFT_FLOAT     soft-float
+OPTSTR_SINGLE_FLOAT   single-float
+OPTSTR_DOUBLE_FLOAT   double-float
 
 # -mabi=
-OPTSTR_ABI_BASE        abi
-STR_ABI_BASE_LP64D     lp64d
-STR_ABI_BASE_LP64F     lp64f
-STR_ABI_BASE_LP64S     lp64s
+OPTSTR_ABI_BASE	      abi
+STR_ABI_BASE_LP64D    lp64d
+STR_ABI_BASE_LP64F    lp64f
+STR_ABI_BASE_LP64S    lp64s
 
 # ABI extension types
-STR_ABI_EXT_BASE       base
+STR_ABI_EXT_BASE      base
 
 # -mcmodel=
-OPTSTR_CMODEL          cmodel
-STR_CMODEL_NORMAL      normal
-STR_CMODEL_TINY        tiny
-STR_CMODEL_TS          tiny-static
-STR_CMODEL_LARGE       large
-STR_CMODEL_EXTREME     extreme
+OPTSTR_CMODEL	      cmodel
+STR_CMODEL_NORMAL     normal
+STR_CMODEL_TINY	      tiny
+STR_CMODEL_TS	      tiny-static
+STR_CMODEL_LARGE      large
+STR_CMODEL_EXTREME    extreme

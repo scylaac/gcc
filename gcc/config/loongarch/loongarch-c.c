@@ -66,7 +66,7 @@ loongarch_cpu_cpp_builtins (cpp_reader *pfile)
   LARCH_CPP_SET_PROCESSOR ("_LOONGARCH_ARCH", __ACTUAL_ARCH);
   LARCH_CPP_SET_PROCESSOR ("_LOONGARCH_TUNE", __ACTUAL_TUNE);
 
-  /* Base architecture / ABI */
+  /* Base architecture / ABI.  */
   if (TARGET_64BIT)
     {
       builtin_define ("__loongarch_grlen=64");
@@ -93,7 +93,7 @@ loongarch_cpu_cpp_builtins (cpp_reader *pfile)
     builtin_define ("__loongarch_soft_float=1");
 
 
-  /* ISA Extensions */
+  /* ISA Extensions.  */
   if (TARGET_DOUBLE_FLOAT)
     builtin_define ("__loongarch_frlen=64");
   else if (TARGET_SINGLE_FLOAT)
@@ -101,7 +101,7 @@ loongarch_cpu_cpp_builtins (cpp_reader *pfile)
   else
     builtin_define ("__loongarch_frlen=0");
 
-  /* Native Data Sizes */
+  /* Native Data Sizes.  */
   builtin_define_with_int_value ("_LOONGARCH_SZINT", INT_TYPE_SIZE);
   builtin_define_with_int_value ("_LOONGARCH_SZLONG", LONG_TYPE_SIZE);
   builtin_define_with_int_value ("_LOONGARCH_SZPTR", POINTER_SIZE);

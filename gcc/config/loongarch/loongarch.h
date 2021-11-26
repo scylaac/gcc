@@ -446,7 +446,6 @@ along with GCC; see the file COPYING3.  If not see
 #define HARD_FRAME_POINTER_IS_FRAME_POINTER 0
 #define HARD_FRAME_POINTER_IS_ARG_POINTER 0
 
-/* FIXME: */
 /* Register in which static-chain is passed to a function.  */
 #define STATIC_CHAIN_REGNUM (GP_REG_FIRST + 20) /* $t8  */
 

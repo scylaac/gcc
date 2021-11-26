@@ -19,13 +19,13 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* Definition of standard codes for:
-    - base architecture types  (isa_base),
-    - ISA extensions           (isa_ext),
-    - base ABI types           (abi_base),
-    - ABI extension types      (abi_ext).
+    - base architecture types	(isa_base),
+    - ISA extensions		(isa_ext),
+    - base ABI types		(abi_base),
+    - ABI extension types	(abi_ext).
 
-    - code models                    (cmodel)
-    - other command-line switches    (switch)
+    - code models		      (cmodel)
+    - other command-line switches     (switch)
 
    These values are primarily used for implementing option handling
    logic in "loongarch.opt", "loongarch-driver.c" and "loongarch-opt.c".
@@ -55,32 +55,32 @@ extern const char* loongarch_isa_base_strings[];
 
 /* enum isa_ext_* */
 extern const char* loongarch_isa_ext_strings[];
-#define ISA_EXT_NOFPU         0
-#define ISA_EXT_FPU32         1
-#define ISA_EXT_FPU64         2
+#define ISA_EXT_NOFPU	      0
+#define ISA_EXT_FPU32	      1
+#define ISA_EXT_FPU64	      2
 #define N_ISA_EXT_FPU_TYPES   3
-#define N_ISA_EXT_TYPES       3
+#define N_ISA_EXT_TYPES	      3
 
 /* enum abi_base */
 extern const char* loongarch_abi_base_strings[];
-#define ABI_BASE_LP64D        0
-#define ABI_BASE_LP64F        1
-#define ABI_BASE_LP64S        2
+#define ABI_BASE_LP64D	      0
+#define ABI_BASE_LP64F	      1
+#define ABI_BASE_LP64S	      2
 #define N_ABI_BASE_TYPES      3
 
 /* enum abi_ext */
 extern const char* loongarch_abi_ext_strings[];
-#define ABI_EXT_BASE          0
-#define N_ABI_EXT_TYPES       1
+#define ABI_EXT_BASE	      0
+#define N_ABI_EXT_TYPES	      1
 
 /* enum cmodel */
 extern const char* loongarch_cmodel_strings[];
-#define CMODEL_NORMAL         0
-#define CMODEL_TINY           1
+#define CMODEL_NORMAL	      0
+#define CMODEL_TINY	      1
 #define CMODEL_TINY_STATIC    2
-#define CMODEL_LARGE          3
-#define CMODEL_EXTREME        4
-#define N_CMODEL_TYPES        5
+#define CMODEL_LARGE	      3
+#define CMODEL_EXTREME	      4
+#define N_CMODEL_TYPES	      5
 
 /* enum switches */
 /* The "SW_" codes represent command-line switches (options that
@@ -89,10 +89,10 @@ extern const char* loongarch_cmodel_strings[];
    in the future.  */
 
 extern const char* loongarch_switch_strings[];
-#define SW_SOFT_FLOAT         0
-#define SW_SINGLE_FLOAT       1
-#define SW_DOUBLE_FLOAT       2
-#define N_SWITCH_TYPES        3
+#define SW_SOFT_FLOAT	      0
+#define SW_SINGLE_FLOAT	      1
+#define SW_DOUBLE_FLOAT	      2
+#define N_SWITCH_TYPES	      3
 
 /* The common default value for variables whose assignments
    are triggered by command-line options.  */
@@ -101,17 +101,17 @@ extern const char* loongarch_switch_strings[];
 #define M_OPT_ABSENT(opt_enum)  ((opt_enum) == M_OPTION_NOT_SEEN)
 
 
-/* Internal representation of the target */
+/* Internal representation of the target.  */
 struct loongarch_isa
 {
-  unsigned char base;       /* ISA_BASE_ */
-  unsigned char fpu;        /* ISA_EXT_FPU_ */
+  unsigned char base;	    /* ISA_BASE_ */
+  unsigned char fpu;	    /* ISA_EXT_FPU_ */
 };
 
 struct loongarch_abi
 {
-  unsigned char base;       /* ABI_BASE_ */
-  unsigned char ext;        /* ABI_EXT_ */
+  unsigned char base;	    /* ABI_BASE_ */
+  unsigned char ext;	    /* ABI_EXT_ */
 };
 
 struct loongarch_target
@@ -121,18 +121,18 @@ struct loongarch_target
   unsigned char cpu_arch;   /* CPU_ */
   unsigned char cpu_tune;   /* same */
   unsigned char cpu_native; /* same */
-  unsigned char cmodel;     /* CMODEL_ */
+  unsigned char cmodel;	    /* CMODEL_ */
 };
 
-/* CPU properties */
+/* CPU properties.  */
 /* index */
-#define CPU_NATIVE        0
-#define CPU_LOONGARCH64   1
-#define CPU_LA464         2
-#define N_ARCH_TYPES      3
-#define N_TUNE_TYPES      3
+#define CPU_NATIVE	  0
+#define CPU_LOONGARCH64	  1
+#define CPU_LA464	  2
+#define N_ARCH_TYPES	  3
+#define N_TUNE_TYPES	  3
 
-/* parallel tables */
+/* parallel tables.  */
 extern const char* loongarch_cpu_strings[];
 extern struct loongarch_isa loongarch_cpu_default_isa[];
 extern int loongarch_cpu_issue_rate[];

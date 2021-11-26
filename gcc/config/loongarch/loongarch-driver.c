@@ -44,23 +44,24 @@ int opt_switches = 0;
    linking (implicitly) against something from the startfile search paths.  */
 static int no_link = 0;
 
-#define LARCH_DRIVER_SET_M_FLAG(OPTS_ARRAY, N_OPTS, FLAG, STR)  \
-  for (int i = 0; i < (N_OPTS); i++)                            \
-  {                                                             \
-    if ((OPTS_ARRAY)[i] != 0)                                   \
-      if (strcmp ((STR), (OPTS_ARRAY)[i]) == 0)                 \
-	(FLAG) = i;                                             \
+#define LARCH_DRIVER_SET_M_FLAG(OPTS_ARRAY, N_OPTS, FLAG, STR)	\
+  for (int i = 0; i < (N_OPTS); i++)				\
+  {								\
+    if ((OPTS_ARRAY)[i] != 0)					\
+      if (strcmp ((STR), (OPTS_ARRAY)[i]) == 0)			\
+	(FLAG) = i;						\
   }
 
 /* Use the public obstack from the gcc driver (defined in gcc.c).
    This is for allocating space for the returned string.  */
 extern struct obstack opts_obstack;
 
-#define APPEND_LTR(S) \
-  obstack_grow (&opts_obstack, (const void*) (S), sizeof((S))/sizeof(char) -1)
+#define APPEND_LTR(S)				      \
+  obstack_grow (&opts_obstack, (const void*) (S),     \
+		sizeof ((S)) / sizeof (char) -1)
 
 #define APPEND_VAL(S) \
-  obstack_grow (&opts_obstack, (const void*) (S), strlen((S)))
+  obstack_grow (&opts_obstack, (const void*) (S), strlen ((S)))
 
 
 const char*
@@ -88,45 +89,34 @@ driver_set_m_flag (int argc, const char **argv)
     {
       LARCH_DRIVER_SET_M_FLAG (
 	loongarch_abi_base_strings, N_ABI_BASE_TYPES,
-	opt_abi_base_driver, PARM
-      )
+	opt_abi_base_driver, PARM)
     }
   else if (MATCH_OPT (ISA_EXT_FPU))
     {
-      LARCH_DRIVER_SET_M_FLAG (
-	loongarch_isa_ext_strings, N_ISA_EXT_FPU_TYPES,
-	opt_fpu_driver, PARM
-      )
+      LARCH_DRIVER_SET_M_FLAG (loongarch_isa_ext_strings, N_ISA_EXT_FPU_TYPES,
+			       opt_fpu_driver, PARM)
     }
   else if (MATCH_OPT (ARCH))
     {
-      LARCH_DRIVER_SET_M_FLAG (
-	loongarch_cpu_strings, N_ARCH_TYPES,
-	opt_arch_driver, PARM
-      )
+      LARCH_DRIVER_SET_M_FLAG (loongarch_cpu_strings, N_ARCH_TYPES,
+			       opt_arch_driver, PARM)
     }
   else if (MATCH_OPT (TUNE))
     {
-      LARCH_DRIVER_SET_M_FLAG (
-	loongarch_cpu_strings, N_TUNE_TYPES,
-	opt_tune_driver, PARM
-      )
+      LARCH_DRIVER_SET_M_FLAG (loongarch_cpu_strings, N_TUNE_TYPES,
+			       opt_tune_driver, PARM)
     }
   else if (MATCH_OPT (CMODEL))
     {
-      LARCH_DRIVER_SET_M_FLAG (
-	loongarch_cmodel_strings, N_CMODEL_TYPES,
-	opt_cmodel_driver, PARM
-      )
+      LARCH_DRIVER_SET_M_FLAG (loongarch_cmodel_strings, N_CMODEL_TYPES,
+			       opt_cmodel_driver, PARM)
     }
   else /* switches */
     {
       int switch_idx = M_OPTION_NOT_SEEN;
 
-      LARCH_DRIVER_SET_M_FLAG (
-	loongarch_switch_strings, N_SWITCH_TYPES,
-	switch_idx, argv[0]
-      )
+      LARCH_DRIVER_SET_M_FLAG (loongarch_switch_strings, N_SWITCH_TYPES,
+			       switch_idx, argv[0])
 
       if (switch_idx != M_OPTION_NOT_SEEN)
 	opt_switches |= loongarch_switch_mask[switch_idx];
@@ -143,28 +133,27 @@ driver_get_normalized_m_opts (int argc, const char **argv)
       return " %eget_normalized_m_opts requires no argument.\n";
     }
 
-  loongarch_config_target (
-    & la_target,
-    opt_switches,
-    opt_arch_driver,
-    opt_tune_driver,
-    opt_fpu_driver,
-    opt_abi_base_driver,
-    opt_abi_ext_driver,
-    opt_cmodel_driver,
-    !no_link /* follow_multilib_list */
-  );
+  loongarch_config_target (& la_target,
+			   opt_switches,
+			   opt_arch_driver,
+			   opt_tune_driver,
+			   opt_fpu_driver,
+			   opt_abi_base_driver,
+			   opt_abi_ext_driver,
+			   opt_cmodel_driver,
+			   !no_link /* follow_multilib_list */);
 
-  /* Output normalized option strings. */
+  /* Output normalized option strings.  */
   obstack_blank (&opts_obstack, 0);
 
 #undef APPEND_LTR
 #define APPEND_LTR(S) \
-  obstack_grow (&opts_obstack, (const void*) (S), sizeof((S))/sizeof(char) -1)
+  obstack_grow (&opts_obstack, (const void*) (S), \
+		sizeof ((S)) / sizeof (char) -1)
 
 #undef APPEND_VAL
 #define APPEND_VAL(S) \
-  obstack_grow (&opts_obstack, (const void*) (S), strlen((S)))
+  obstack_grow (&opts_obstack, (const void*) (S), strlen ((S)))
 
 #undef APPEND_OPT
 #define APPEND_OPT(NAME) \

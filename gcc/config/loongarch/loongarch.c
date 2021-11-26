@@ -2955,7 +2955,6 @@ loongarch_rtx_costs (rtx x, machine_mode mode, int outer_code,
       if (float_mode_p)
 	*total = loongarch_fp_mult_cost (mode);
       else if (mode == DImode && !TARGET_64BIT)
-	// FIXED ME???
 	*total = (speed
 		  ? loongarch_cost->int_mult_si * 3 + 6
 		  : COSTS_N_INSNS (7));
@@ -5583,7 +5582,7 @@ static int
 loongarch_issue_rate (void)
 {
   if ((unsigned long) __ACTUAL_TUNE < N_TUNE_TYPES)
-    return loongarch_cpu_issue_rate [__ACTUAL_TUNE];
+    return loongarch_cpu_issue_rate[__ACTUAL_TUNE];
   else
     return 1;
 }
@@ -5595,7 +5594,7 @@ static int
 loongarch_multipass_dfa_lookahead (void)
 {
   if ((unsigned long) __ACTUAL_TUNE < N_ARCH_TYPES)
-    return loongarch_cpu_multipass_dfa_lookahead [__ACTUAL_TUNE];
+    return loongarch_cpu_multipass_dfa_lookahead[__ACTUAL_TUNE];
   else
     return 0;
 }
