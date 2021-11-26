@@ -248,8 +248,10 @@ config_target_isa:
   t.isa = loongarch_cpu_default_isa[__ACTUAL_ARCH];
 
   /* Apply incremental changes.  */
-  t.isa.fpu = constrained.fpu ?
-    opt_fpu : DEFAULT_ISA_EXT_FPU;
+  /* "-march=native" overrides the default FPU type.  */
+  t.isa.fpu = constrained.fpu ? opt_fpu :
+    ((t.cpu_arch == CPU_NATIVE && constrained.arch) ?
+     t.isa.fpu : DEFAULT_ISA_EXT_FPU);
 
 
   /* 4. ABI-ISA compatibility */

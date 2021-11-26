@@ -4924,24 +4924,19 @@ case "${target}" in
 		loongarch64-*-linux-gnuf64)
 			la_canonical_triplet="loongarch64-linux-gnuf64"
 			abi_pattern="lp64d"
-			fpu_pattern="64"
 			;;
 		loongarch64-*-linux-gnuf32)
 			la_canonical_triplet="loongarch64-linux-gnuf32"
 			abi_pattern="lp64f"
-			fpu_pattern="32"
 			;;
 		loongarch64-*-linux-gnusf)
 			la_canonical_triplet="loongarch64-linux-gnusf"
 			abi_pattern="lp64s"
-			fpu_pattern="0"
 			;;
 		loongarch64-*-linux-gnu)
 			la_canonical_triplet="loongarch64-linux-gnuf64"
 			abi_pattern="lp64[dfs]"
 			abi_default="lp64d"
-			fpu_pattern="[^ ]+"
-			fpu_default="64"
 			;;
 		*)
 			echo "Unsupported target ${target}." 1>&2
@@ -5016,8 +5011,8 @@ case "${target}" in
 			fpu_default="32"
 			;;
 		lp64s/base)
-			fpu_pattern="0|32|64"
-			fpu_default="0"
+			fpu_pattern="none|32|64"
+			fpu_default="none"
 			;;
 		*)
 			echo "Unsupported ABI type ${with_abi}/${with_abiext}." 1>&2
@@ -5147,7 +5142,7 @@ case "${target}" in
 		esac
 
 		case ${with_fpu} in
-		0 | 32 | 64) ;; # OK, append here.
+		none | 32 | 64) ;; # OK, append here.
 		*)
 			echo "Unknown fpu type in --with-fpu=$with_fpu" 1>&2
 			exit 1
