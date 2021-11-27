@@ -5150,7 +5150,11 @@ case "${target}" in
 		esac
 
 		# Handle --with-multilib-list.
-		if test x${with_multilib_list} == xdefault || test x${enable_multilib} != xyes; then
+		if test x${with_multilib_list} == x \
+		   || test x${with_multilib_list} == xno \
+		   || test x${with_multilib_list} == xdefault \
+		   || test x${enable_multilib} != xyes; then
+
 			with_multilib_list="${with_abi}/${with_abiext}"
 		fi
 
