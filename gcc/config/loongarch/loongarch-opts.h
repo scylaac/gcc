@@ -28,9 +28,7 @@ extern struct loongarch_target la_target;
 /* Switch masks */
 extern const int loongarch_switch_mask[];
 
-#ifdef IN_LIBGCC2
-#include "loongarch-def.h"
-#else
+#if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS) && !defined(IN_RTS)
 extern "C" {
 #include "loongarch-def.h"
 }
