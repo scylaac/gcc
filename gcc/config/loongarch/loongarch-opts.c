@@ -186,18 +186,20 @@ loongarch_config_target (struct loongarch_target *target,
 
       /* The target ISA is not ready yet, but (isa_required (t.abi)
 	 + forced fpu) is enough for computing the forced base ABI.  */
-      struct loongarch_isa force_isa = isa_required (t.abi);
+      struct loongarch_isa default_isa = isa_required (t.abi);
+      struct loongarch_isa force_isa = default_isa;
       struct loongarch_abi force_abi = t.abi;
       force_isa.fpu = opt_fpu;
       force_abi.base = isa_default_abi (&force_isa).base;
 
-      if (isa_fpu_compat_p (&(t.isa), &(force_isa)));
-	/* keep quiet */
+      if (isa_fpu_compat_p (&(default_isa), &(force_isa)));
+	/* Keep quiet if -m*-float does not promote the FP ABI.  */
       else if (constrained.abi_base && (t.abi.base != force_abi.base))
 	inform (UNKNOWN_LOCATION,
-		"%<-m%s%> overrides %<-m" OPTSTR_ABI_BASE "=%s%>",
+		"%<-m%s%> overrides %<-m%s=%s%>, promoting ABI to %qs",
 		loongarch_switch_strings[on_switch],
-		loongarch_abi_base_strings[t.abi.base]);
+		OPTSTR_ABI_BASE, loongarch_abi_base_strings[t.abi.base],
+		abi_str (force_abi));
 
       t.abi.base = force_abi.base;
     }
@@ -231,13 +233,13 @@ loongarch_config_target (struct loongarch_target *target,
 #else
   if (t.cpu_arch == CPU_NATIVE)
     fatal_error (UNKNOWN_LOCATION,
-		 "%<-m" OPTSTR_ARCH "=" STR_CPU_NATIVE "%> "
-		 "does not work on a cross compiler");
+		 "%qs does not work on a cross compiler",
+		 "-m" OPTSTR_ARCH "=" STR_CPU_NATIVE);
 
   else if (t.cpu_tune == CPU_NATIVE)
     fatal_error (UNKNOWN_LOCATION,
-		 "%<-m" OPTSTR_TUNE "=" STR_CPU_NATIVE "%> "
-		 "does not work on a cross compiler");
+		 "%qs does not work on a cross compiler",
+		 "-m" OPTSTR_TUNE "=" STR_CPU_NATIVE);
 #endif
 
   /* 3.  Target ISA */
@@ -275,12 +277,20 @@ config_target_isa:
     {
       /* Base architecture can only be implied by -march,
 	 so we adjust that first if it is not constrained.  */
-      t.cpu_arch = abi_default_cpu_arch (t.abi);
-      warning (0, "%s CPU architecture (%qs) does not support %qs ABI, "
-	       "falling back to %<-m" OPTSTR_ARCH "=%s%>",
-	       (t.cpu_arch == CPU_NATIVE ? "your native" : "default"),
-	       arch_str (&t), abi_str (t.abi), arch_str (&t));
+      int fallback_arch = abi_default_cpu_arch (t.abi);
 
+      if (t.cpu_arch == CPU_NATIVE)
+	warning (0, "your native CPU architecture (%qs) "
+		 "does not support %qs ABI, falling back to %<-m%s=%s%>",
+		 arch_str (&t), abi_str (t.abi), OPTSTR_ARCH,
+		 loongarch_cpu_string[fallback_arch]);
+      else
+	warning (0, "default CPU architecture (%qs) "
+		 "does not support %qs ABI, falling back to %<-m%s=%s%>",
+		 arch_str (&t), abi_str (t.abi), OPTSTR_ARCH,
+		 loongarch_cpu_string[fallback_arch]);
+
+      t.cpu_arch = fallback_arch;
       constrained.arch = 1;
       goto config_target_isa;
     }
