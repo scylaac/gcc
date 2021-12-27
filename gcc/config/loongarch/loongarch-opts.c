@@ -266,13 +266,11 @@ config_target_isa:
   */
   struct loongarch_abi abi_tmp;
   const struct loongarch_isa* isa_min;
-  struct loongarch_isa isa_tmp;
 
   abi_tmp = t.abi;
   isa_min = &isa_required (abi_tmp);
-  isa_tmp = t.isa;
 
-  if (isa_base_compat_p (&isa_tmp, isa_min)); /* OK */
+  if (isa_base_compat_p (&t.isa, isa_min)); /* OK */
   else if (!constrained.arch)
     {
       /* Base architecture can only be implied by -march,
@@ -298,18 +296,18 @@ config_target_isa:
     {
       /* If -march is given while -mabi is not,
 	 try selecting another base ABI type.  */
-      abi_tmp.base = isa_default_abi (&isa_tmp).base;
+      abi_tmp.base = isa_default_abi (&t.isa).base;
     }
   else
     goto fatal;
 
-  if (isa_fpu_compat_p (&isa_tmp, isa_min)); /* OK */
+  if (isa_fpu_compat_p (&t.isa, isa_min)); /* OK */
   else if (!constrained.fpu)
-    isa_tmp.fpu = isa_min->fpu;
+    t.isa.fpu = isa_min->fpu;
   else if (!constrained.abi_base)
       /* If -march is compatible with the default ABI
 	 while -mfpu is not.  */
-    abi_tmp.base = isa_default_abi (&isa_tmp).base;
+    abi_tmp.base = isa_default_abi (&t.isa).base;
   else
     goto fatal;
 
@@ -334,7 +332,7 @@ fatal:
 	      for (unsigned int i = 0; i < ABI_COUNT; i++)
 		{
 		  if (is_multilib_enabled (abi_priority_list[i])
-		      && abi_compat_p (&isa_tmp, abi_priority_list[i]))
+		      && abi_compat_p (&t.isa, abi_priority_list[i]))
 		    {
 		      abi_tmp = abi_priority_list[i];
 
