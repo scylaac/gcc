@@ -19,15 +19,15 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Default system library search paths.
  * This ensures that a compiler configured with --disable-multilib
- * can work in an multilib environment.  */
+ * can work in a multilib environment.  */
 
 #if defined(__DISABLE_MULTILIB) && defined(__DISABLE_MULTIARCH)
 
-  #if DEFAULT_ABI_INT == ABI_BASE_LP64D
+  #if DEFAULT_ABI_BASE == ABI_BASE_LP64D
     #define ABI_LIBDIR "lib64"
-  #elif DEFAULT_ABI_INT == ABI_BASE_LP64F
+  #elif DEFAULT_ABI_BASE == ABI_BASE_LP64F
     #define ABI_LIBDIR "lib64/f32"
-  #elif DEFAULT_ABI_INT == ABI_BASE_LP64S
+  #elif DEFAULT_ABI_BASE == ABI_BASE_LP64S
     #define ABI_LIBDIR "lib64/sf"
   #endif
 
