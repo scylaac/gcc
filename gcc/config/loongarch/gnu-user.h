@@ -1,4 +1,5 @@
-/* Definitions for LoongArch systems using GNU userspace.
+/* Definitions for LoongArch systems using GNU (glibc-based) userspace,
+   or other userspace with libc derived from glibc.
    Copyright (C) 2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -28,14 +29,19 @@ along with GCC; see the file COPYING3.  If not see
 /* GNU-specific SPEC definitions.  */
 #define GNU_USER_LINK_EMULATION "elf" ABI_GRLEN_SPEC "loongarch"
 
+#undef GLIBC_DYNAMIC_LINKER
 #define GLIBC_DYNAMIC_LINKER \
   "/lib" ABI_GRLEN_SPEC "/ld-linux-loongarch-" ABI_SPEC ".so.1"
+
+#undef MUSL_DYNAMIC_LINKER
+#define MUSL_DYNAMIC_LINKER \
+  "/lib" ABI_GRLEN_SPEC "/ld-musl-loongarch-" ABI_SPEC ".so.1"
 
 #undef GNU_USER_TARGET_LINK_SPEC
 #define GNU_USER_TARGET_LINK_SPEC \
   "%{G*} %{shared} -m " GNU_USER_LINK_EMULATION \
   "%{!shared: %{static} %{!static: %{rdynamic:-export-dynamic} " \
-  "-dynamic-linker " GLIBC_DYNAMIC_LINKER "}}"
+  "-dynamic-linker " GNU_USER_DYNAMIC_LINKER "}}"
 
 
 /* Similar to standard Linux, but adding -ffast-math support.  */
