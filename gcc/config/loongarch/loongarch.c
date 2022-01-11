@@ -1432,8 +1432,8 @@ loongarch_expand_epilogue (bool sibcall_p)
     emit_jump_insn (gen_simple_return_internal (ra));
 }
 
-#define LU32I_B (0xfffffUL << 32)
-#define LU52I_B (0xfffUL << 52)
+#define LU32I_B (0xfffffULL << 32)
+#define LU52I_B (0xfffULL << 52)
 
 static unsigned int
 loongarch_build_integer (struct loongarch_integer_op *codes,
@@ -1486,7 +1486,7 @@ loongarch_build_integer (struct loongarch_integer_op *codes,
       codes[cost].value = ((value << 12) >> 44) << 32;
       cost++;
 
-      if (!lu52i[(value & (1UL << 51)) >> 51])
+      if (!lu52i[(value & (1ULL << 51)) >> 51])
 	{
 	  codes[cost].method = METHOD_LU52I;
 	  codes[cost].value = (value >> 52) << 52;
