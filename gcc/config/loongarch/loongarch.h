@@ -626,12 +626,12 @@ enum reg_class
 /* True if VALUE can be loaded into a register using LU32I.  */
 
 #define LU32I_OPERAND(VALUE) \
-  (((VALUE) | (((1UL << 19) - 1) << 32)) == (((1UL << 19) - 1) << 32) \
-   || ((VALUE) | (((1UL << 19) - 1) << 32)) + (1UL << 32) == 0)
+  (((VALUE) | (((1ULL << 19) - 1) << 32)) == (((1ULL << 19) - 1) << 32) \
+   || ((VALUE) | (((1ULL << 19) - 1) << 32)) + (1ULL << 32) == 0)
 
 /* True if VALUE can be loaded into a register using LU52I.  */
 
-#define LU52I_OPERAND(VALUE) (((VALUE) | (0xfffUL << 52)) == (0xfffUL << 52))
+#define LU52I_OPERAND(VALUE) (((VALUE) | (0xfffULL << 52)) == (0xfffULL << 52))
 
 /* Return a value X with the low 12 bits clear, and such that
    VALUE - X is a signed 12-bit value.  */
