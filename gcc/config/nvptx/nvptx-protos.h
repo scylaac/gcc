@@ -1,5 +1,5 @@
-/* Prototypes for exported functions defined in nvptx.c.
-   Copyright (C) 2014-2021 Free Software Foundation, Inc.
+/* Prototypes for exported functions defined in nvptx.cc.
+   Copyright (C) 2014-2022 Free Software Foundation, Inc.
    Contributed by Bernd Schmidt <bernds@codesourcery.com>
 
    This file is part of GCC.
@@ -40,6 +40,7 @@ extern void nvptx_output_aligned_decl (FILE *file, const char *name,
 extern void nvptx_function_end (FILE *);
 extern void nvptx_output_skip (FILE *, unsigned HOST_WIDE_INT);
 extern void nvptx_output_ascii (FILE *, const char *, unsigned HOST_WIDE_INT);
+extern void nvptx_cpu_cpp_builtins (void);
 extern void nvptx_register_pragmas (void);
 extern unsigned int nvptx_data_alignment (const_tree, unsigned int);
 
@@ -58,5 +59,6 @@ extern const char *nvptx_output_simt_enter (rtx, rtx, rtx);
 extern const char *nvptx_output_simt_exit (rtx);
 extern const char *nvptx_output_red_partition (rtx, rtx);
 extern const char *nvptx_output_atomic_insn (const char *, rtx *, int, int);
+extern bool nvptx_mem_local_p (rtx);
 #endif
 #endif
