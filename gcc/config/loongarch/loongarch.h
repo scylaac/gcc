@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  LoongArch version.
-   Copyright (C) 2021 Free Software Foundation, Inc.
+   Copyright (C) 2021-2022 Free Software Foundation, Inc.
    Contributed by Loongson Ltd.
    Based on MIPS and RISC-V target for GNU compiler.
 
@@ -242,8 +242,6 @@ along with GCC; see the file COPYING3.  If not see
 #define SHORT_ACCUM_TYPE_SIZE 16
 #define ACCUM_TYPE_SIZE 32
 #define LONG_ACCUM_TYPE_SIZE 64
-/* FIXME.  LONG_LONG_ACCUM_TYPE_SIZE should be 128 bits, but GCC
-   doesn't support 128-bit integers for loongarch32 currently.  */
 #define LONG_LONG_ACCUM_TYPE_SIZE (TARGET_64BIT ? 128 : 64)
 
 /* long double is not a fixed mode, but the idea is that, if we
@@ -877,13 +875,6 @@ typedef struct loongarch_args
 #define BRANCH_COST(speed_p, predictable_p) loongarch_branch_cost
 #define LOGICAL_OP_NON_SHORT_CIRCUIT 0
 
-/* If defined, modifies the length assigned to instruction INSN as a
-   function of the context in which it is used.  LENGTH is an lvalue
-   that contains the initially computed length of the insn and should
-   be updated with the correct length of the insn.  */
-#define ADJUST_INSN_LENGTH(INSN, LENGTH) \
-  ((LENGTH) = loongarch_adjust_insn_length ((INSN), (LENGTH)))
-
 /* Return the asm template for a conditional branch instruction.
    OPCODE is the opcode's mnemonic and OPERANDS is the asm template for
    its operands.  */
@@ -956,14 +947,6 @@ typedef struct loongarch_args
   { "v0",	 4 + GP_REG_FIRST },					\
   { "v1",	 5 + GP_REG_FIRST }					\
 }
-
-#define DBR_OUTPUT_SEQEND(STREAM) \
-  do \
-    { \
-      /* Emit a blank line after the delay slot for emphasis.  */ \
-      fputs ("\n", STREAM); \
-    } \
-  while (0)
 
 /* The LoongArch implementation uses some labels for its own purpose.  The
    following lists what labels are created, and are all formed by the
@@ -1160,8 +1143,9 @@ typedef struct loongarch_args
    value of LARCH_CALL_RATIO to take that into account.  */
 
 #define MOVE_RATIO(speed) \
-  (HAVE_cpymemsi ? LARCH_MAX_MOVE_BYTES_STRAIGHT / MOVE_MAX \
-		 : LARCH_CALL_RATIO / 2)
+  (HAVE_cpymemsi \
+   ? LARCH_MAX_MOVE_BYTES_PER_LOOP_ITER / UNITS_PER_WORD \
+   : CLEAR_RATIO (speed) / 2)
 
 /* For CLEAR_RATIO, when optimizing for size, give a better estimate
    of the length of a memset call, but use the default otherwise.  */
@@ -1221,10 +1205,6 @@ struct GTY (()) machine_function
   /* The current frame information, calculated by loongarch_compute_frame_info.
    */
   struct loongarch_frame_info frame;
-
-  /* True if loongarch_adjust_insn_length should ignore an instruction's
-     hazard attribute.  */
-  bool ignore_hazard_length_p;
 
   /* True if at least one of the formal parameters to a function must be
      written to the frame header (probably so its address can be taken).  */

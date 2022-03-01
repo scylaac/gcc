@@ -1,5 +1,5 @@
 /* Subroutines used for LoongArch code generation.
-   Copyright (C) 2021 Free Software Foundation, Inc.
+   Copyright (C) 2021-2022 Free Software Foundation, Inc.
    Contributed by Loongson Ltd.
    Based on MIPS and RISC-V target for GNU compiler.
 
@@ -150,16 +150,6 @@ enum loongarch_load_imm_method
   METHOD_INSV
 };
 
-/* One stage in a constant building sequence.  These sequences have
-   the form:
-
-	A = VALUE[0]
-	A = A CODE[1] VALUE[1]
-	A = A CODE[2] VALUE[2]
-	...
-
-   where A is an accumulator, each CODE[i] is a binary rtl operation
-   and each VALUE[i] is a constant integer.  CODE[0] is undefined.  */
 struct loongarch_integer_op
 {
   enum rtx_code code;
@@ -1435,6 +1425,9 @@ loongarch_expand_epilogue (bool sibcall_p)
 #define LU32I_B (0xfffffULL << 32)
 #define LU52I_B (0xfffULL << 52)
 
+/* Fill CODES with a sequence of rtl operations to load VALUE.
+   Return the number of operations needed.  */
+
 static unsigned int
 loongarch_build_integer (struct loongarch_integer_op *codes,
 			 HOST_WIDE_INT value)
@@ -1442,10 +1435,13 @@ loongarch_build_integer (struct loongarch_integer_op *codes,
 {
   unsigned int cost = 0;
 
+  /* Get the lower 32 bits of the value.  */
   HOST_WIDE_INT low_part = TARGET_64BIT ? value << 32 >> 32 : value;
 
   if (IMM12_OPERAND (low_part) || IMM12_OPERAND_UNSIGNED (low_part))
     {
+      /* The value of the lower 32 bit be loaded with one instruction.
+	 lu12i.w.  */
       codes[0].code = UNKNOWN;
       codes[0].method = METHOD_NORMAL;
       codes[0].value = low_part;
@@ -1453,6 +1449,7 @@ loongarch_build_integer (struct loongarch_integer_op *codes,
     }
   else
     {
+      /* lu12i.w + ior.  */
       codes[0].code = UNKNOWN;
       codes[0].method = METHOD_NORMAL;
       codes[0].value = low_part & ~(IMM_REACH - 1);
@@ -1473,8 +1470,13 @@ loongarch_build_integer (struct loongarch_integer_op *codes,
       bool lu52i[2] = {(value & LU52I_B) == 0, (value & LU52I_B) == LU52I_B};
 
       int sign31 = (value & (1UL << 31)) >> 31;
+      /* Determine whether the upper 32 bits are sign-extended from the lower
+	 32 bits. If it is, the instructions to load the high order can be
+	 ommitted.  */
       if (lu32i[sign31] && lu52i[sign31])
 	return cost;
+      /* Determine whether bits 32-51 are sign-extended from the lower 32
+	 bits. If so, directly load 52-63 bits.  */
       else if (lu32i[sign31])
 	{
 	  codes[cost].method = METHOD_LU52I;
@@ -1486,6 +1488,8 @@ loongarch_build_integer (struct loongarch_integer_op *codes,
       codes[cost].value = ((value << 12) >> 44) << 32;
       cost++;
 
+      /* Determine whether the 52-61 bits are sign-extended from the low order,
+	 and if not, load the 52-61 bits.  */
       if (!lu52i[(value & (1ULL << 51)) >> 51])
 	{
 	  codes[cost].method = METHOD_LU52I;
@@ -2920,12 +2924,12 @@ loongarch_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	}
 
       /* If it's an add + mult (which is equivalent to shift left) and
-	 it's immediate operand satisfies const_immlsa_operand predicate.  */
+	 it's immediate operand satisfies const_immalsl_operand predicate.  */
       if ((mode == SImode || (TARGET_64BIT && mode == DImode))
 	  && GET_CODE (XEXP (x, 0)) == MULT)
 	{
 	  rtx op2 = XEXP (XEXP (x, 0), 1);
-	  if (const_immlsa_operand (op2, mode))
+	  if (const_immalsl_operand (op2, mode))
 	    {
 	      *total = (COSTS_N_INSNS (1)
 			+ set_src_cost (XEXP (XEXP (x, 0), 0), mode, speed)
@@ -3417,7 +3421,7 @@ loongarch_output_move (rtx dest, rtx src)
 }
 
 /* Return true if CMP1 is a suitable second operand for integer ordering
-   test CODE.  See also the *sCC patterns in loongarch.md.  */
+   test CODE.  */
 
 static bool
 loongarch_int_order_operand_ok_p (enum rtx_code code, rtx cmp1)
@@ -3450,8 +3454,8 @@ loongarch_int_order_operand_ok_p (enum rtx_code code, rtx cmp1)
 /* Return true if *CMP1 (of mode MODE) is a valid second operand for
    integer ordering test *CODE, or if an equivalent combination can
    be formed by adjusting *CODE and *CMP1.  When returning true, update
- *CODE and *CMP1 with the chosen code and operand, otherwise leave
- them alone.  */
+   *CODE and *CMP1 with the chosen code and operand, otherwise leave
+   them alone.  */
 
 static bool
 loongarch_canonicalize_int_order_test (enum rtx_code *code, rtx *cmp1,
@@ -3666,7 +3670,7 @@ loongarch_emit_float_compare (enum rtx_code *code, rtx *op0, rtx *op1)
      then compare that register against zero.
 
      Set CMP_CODE to the code of the comparison instruction and
-   *CODE to the code that the branch or move should use.  */
+     *CODE to the code that the branch or move should use.  */
   enum rtx_code cmp_code = *code;
   /* Three FP conditions cannot be implemented by reversing the
      operands for FCMP.cond.fmt, instead a reversed condition code is
@@ -3737,17 +3741,16 @@ loongarch_expand_conditional_move (rtx *operands)
     loongarch_emit_float_compare (&code, &op0, &op1);
   else
     {
-      /* See test-cbranchqi4.c and pr53645.c.  */
       loongarch_extend_comparands (code, &op0, &op1);
 
       op0 = force_reg (word_mode, op0);
 
-      if (code == EQ || code == NE) /* See test-mask-1.c && test-mask-5.c.  */
+      if (code == EQ || code == NE)
 	{
 	  op0 = loongarch_zero_if_equal (op0, op1);
 	  op1 = const0_rtx;
 	}
-      else /* See test-mask-2.c.  */
+      else
 	{
 	  /* The comparison needs a separate scc instruction.  Store the
 	     result of the scc in *OP0 and compare it against zero.  */
@@ -3762,7 +3765,7 @@ loongarch_expand_conditional_move (rtx *operands)
 
   rtx cond = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1);
   /* There is no direct support for general conditional GP move involving
-     two registers using SEL.  See test-mask-3.c.  */
+     two registers using SEL.  */
   if (INTEGRAL_MODE_P (GET_MODE (operands[2]))
       && register_operand (operands[2], VOIDmode)
       && register_operand (operands[3], VOIDmode))
@@ -3820,95 +3823,6 @@ loongarch_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
 {
   /* Always OK.  */
   return true;
-}
-
-/* Implement TARGET_USE_BY_PIECES_INFRASTRUCTURE_P.  */
-
-bool
-loongarch_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
-					  unsigned int align,
-					  enum by_pieces_operation op,
-					  bool speed_p)
-{
-  if (op == STORE_BY_PIECES)
-    return loongarch_store_by_pieces_p (size, align);
-  if (op == MOVE_BY_PIECES && HAVE_cpymemsi)
-    {
-      /* cpymemsi is meant to generate code that is at least as good as
-	 move_by_pieces.  However, cpymemsi effectively uses a by-pieces
-	 implementation both for moves smaller than a word and for
-	 word-aligned moves of no more than LARCH_MAX_MOVE_BYTES_STRAIGHT
-	 bytes.  We should allow the tree-level optimisers to do such
-	 moves by pieces, as it often exposes other optimization
-	 opportunities.  We might as well continue to use cpymemsi at
-	 the rtl level though, as it produces better code when
-	 scheduling is disabled (such as at -O).  */
-      if (currently_expanding_to_rtl)
-	return false;
-      if (align < BITS_PER_WORD)
-	return size < UNITS_PER_WORD;
-      return size <= LARCH_MAX_MOVE_BYTES_STRAIGHT;
-    }
-
-  return default_use_by_pieces_infrastructure_p (size, align, op, speed_p);
-}
-
-/* Implement a handler for STORE_BY_PIECES operations
-   for TARGET_USE_BY_PIECES_INFRASTRUCTURE_P.  */
-
-bool
-loongarch_store_by_pieces_p (unsigned HOST_WIDE_INT size, unsigned int align)
-{
-  /* Storing by pieces involves moving constants into registers
-     of size MIN (ALIGN, BITS_PER_WORD), then storing them.
-     We need to decide whether it is cheaper to load the address of
-     constant data into a register and use a block move instead.  */
-
-  /* If the data is only byte aligned, then:
-
-     (a1) A block move of less than 4 bytes would involve three 3 LD.Bs and
-	  3 ST.Bs.  We might as well use 3 single-instruction LIs and 3 SD.Bs
-	  instead.
-
-     (a2) A block move of 4 bytes from aligned source data can use an
-	  LD.W/ST.W sequence.  This is often better than the 4 LIs and
-	  4 SD.Bs that we would generate when storing by pieces.  */
-  if (align <= BITS_PER_UNIT)
-    return size < 4;
-
-  /* If the data is 2-byte aligned, then:
-
-     (b1) A block move of less than 4 bytes would use a combination of LD.Bs,
-	  LD.Hs, SD.Bs and SD.Hs.  We get better code by using
-     single-instruction LIs, SD.Bs and SD.Hs instead.
-
-     (b2) A block move of 4 bytes from aligned source data would again use
-	  an LD.W/ST.W sequence.  In most cases, loading the address of
-	  the source data would require at least one extra instruction.
-	  It is often more efficient to use 2 single-instruction LIs and
-	  2 SHs instead.
-
-     (b3) A block move of up to 3 additional bytes would be like (b1).
-
-     (b4) A block move of 8 bytes from aligned source data can use two
-	  LD.W/ST.W sequences.  Both sequences are better than the 4 LIs
-	  and 4 ST.Hs that we'd generate when storing by pieces.
-
-     The reasoning for higher alignments is similar:
-
-     (c1) A block move of less than 4 bytes would be the same as (b1).
-
-     (c2) A block move of 4 bytes would use an LD.W/ST.W sequence.  Again,
-	  loading the address of the source data would typically require
-	  at least one extra instruction.  It is generally better to use
-	  LU12I/ORI/SW instead.
-
-     (c3) A block move of up to 3 additional bytes would be like (b1).
-
-     (c4) A block move of 8 bytes can use two LD.W/ST.W sequences or a single
-	  LD.D/ST.D sequence, and in these cases we've traditionally preferred
-	  the memory copy over the more bulky constant moves.  */
-  return size < 8;
 }
 
 /* Emit straight-line code to move LENGTH bytes from SRC to DEST.
@@ -4278,6 +4192,32 @@ loongarch_print_operand_punct_valid_p (unsigned char code)
    implement the release portion of memory model MODEL.  */
 
 static bool
+loongarch_memmodel_needs_rel_acq_fence (enum memmodel model)
+{
+  switch (model)
+    {
+      case MEMMODEL_ACQ_REL:
+      case MEMMODEL_SEQ_CST:
+      case MEMMODEL_SYNC_SEQ_CST:
+      case MEMMODEL_RELEASE:
+      case MEMMODEL_SYNC_RELEASE:
+      case MEMMODEL_ACQUIRE:
+      case MEMMODEL_CONSUME:
+      case MEMMODEL_SYNC_ACQUIRE:
+	return true;
+
+      case MEMMODEL_RELAXED:
+	return false;
+
+      default:
+	gcc_unreachable ();
+    }
+}
+
+/* Return true if a FENCE should be emitted to before a memory access to
+   implement the release portion of memory model MODEL.  */
+
+static bool
 loongarch_memmodel_needs_release_fence (enum memmodel model)
 {
   switch (model)
@@ -4437,7 +4377,7 @@ loongarch_print_operand (FILE *file, rtx op, int letter)
       break;
 
     case 'A':
-      if (loongarch_memmodel_needs_release_fence ((enum memmodel) INTVAL (op)))
+      if (loongarch_memmodel_needs_rel_acq_fence ((enum memmodel) INTVAL (op)))
 	fputs ("_db", file);
       break;
 
@@ -5255,8 +5195,6 @@ loongarch_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
 
   regno = true_regnum (x);
 
-  /* Copying from accumulator registers to anywhere other than a general
-     register requires a temporary general register.  */
   if (reg_class_subset_p (rclass, FP_REGS))
     {
       if (regno < 0
@@ -5317,51 +5255,6 @@ loongarch_preferred_simd_mode (scalar_mode mode ATTRIBUTE_UNUSED)
   return word_mode;
 }
 
-/* Return the length of INSN.  LENGTH is the initial length computed by
-   attributes in the machine-description file.  */
-
-int
-loongarch_adjust_insn_length (rtx_insn *insn, int length)
-{
-  /* loongarch.md uses MAX_PIC_BRANCH_LENGTH as a placeholder for the length
-     of a PIC long-branch sequence.  Substitute the correct value.  */
-  if (length == MAX_PIC_BRANCH_LENGTH
-      && JUMP_P (insn)
-      && INSN_CODE (insn) >= 0
-      && get_attr_type (insn) == TYPE_BRANCH)
-    {
-      /* Add the branch-over instruction and its delay slot, if this
-	 is a conditional branch.  */
-      length = simplejump_p (insn) ? 0 : 8;
-
-      /* Add the length of an indirect jump, ignoring the delay slot.  */
-      length += 4;
-    }
-
-  /* A unconditional jump has an unfilled delay slot if it is not part
-     of a sequence.  A conditional jump normally has a delay slot.  */
-  if (CALL_P (insn) || (JUMP_P (insn)))
-    length += 4;
-
-  /* See how many nops might be needed to avoid hardware hazards.  */
-  if (!cfun->machine->ignore_hazard_length_p
-      && INSN_P (insn)
-      && INSN_CODE (insn) >= 0)
-    switch (get_attr_hazard (insn))
-      {
-      case HAZARD_NONE:
-	break;
-
-      case HAZARD_DELAY:
-      case HAZARD_FORBIDDEN_SLOT:
-	/* nop insn length is 4 bytes.  */
-	length += 4;
-	break;
-      }
-
-  return length;
-}
-
 /* Return the assembly code for INSN, which has the operands given by
    OPERANDS, and which branches to OPERANDS[0] if some condition is true.
    BRANCH_IF_TRUE is the asm template that should be used if OPERANDS[0]
@@ -5379,7 +5272,7 @@ loongarch_output_conditional_branch (rtx_insn *insn, rtx *operands,
   gcc_assert (LABEL_P (operands[0]));
 
   length = get_attr_length (insn);
-  if (length <= 12)
+  if (length <= 4)
     {
       return branch_if_true;
     }
@@ -5392,37 +5285,7 @@ loongarch_output_conditional_branch (rtx_insn *insn, rtx *operands,
   operands[0] = not_taken;
   output_asm_insn (branch_if_false, operands);
 
-  /* If INSN has a delay slot, we must provide delay slots for both the
-     branch to NOT_TAKEN and the conditional jump.  We must also ensure
-     that INSN's delay slot is executed in the appropriate cases.  */
-  if (final_sequence)
-    {
-      /* This first delay slot will always be executed, so use INSN's
-	 delay slot if is not annulled.  */
-      if (!INSN_ANNULLED_BRANCH_P (insn))
-	{
-	  final_scan_insn (final_sequence->insn (1), asm_out_file, optimize, 1,
-			   NULL);
-	  final_sequence->insn (1)->set_deleted ();
-	}
-      fprintf (asm_out_file, "\n");
-    }
-
   output_asm_insn ("b\t%0", &taken);
-
-  /* Now deal with its delay slot; see above.  */
-  if (final_sequence)
-    {
-      /* This delay slot will only be executed if the branch is taken.
-	 Use INSN's delay slot if is annulled.  */
-      if (INSN_ANNULLED_BRANCH_P (insn))
-	{
-	  final_scan_insn (final_sequence->insn (1), asm_out_file, optimize, 1,
-			   NULL);
-	  final_sequence->insn (1)->set_deleted ();
-	}
-      fprintf (asm_out_file, "\n");
-    }
 
   /* Output NOT_TAKEN.  */
   targetm.asm_out.internal_label (asm_out_file, "L",
@@ -5479,8 +5342,12 @@ loongarch_output_order_conditional_branch (rtx_insn *insn, rtx *operands,
 	    {
 	    case LT:
 	    case LTU:
+	    case GT:
+	    case GTU:
 	      inverted_p = !inverted_p;
 	      /* Fall through.  */
+	    case LE:
+	    case LEU:
 	    case GE:
 	    case GEU:
 	      branch[!inverted_p] = LARCH_BRANCH ("b", "%0");
@@ -5915,11 +5782,6 @@ loongarch_option_override_internal (struct gcc_options *opts,
 	gcc_unreachable ();
     }
 
-  /* .cfi_* directives generate a read-only section, so fall back on
-     manual .eh_frame creation if we need the section to be writable.  */
-  if (flag_pic)
-    flag_dwarf2_cfi_asm = 0;
-
   loongarch_init_print_operand_punct ();
 
   /* Set up array to map GCC register number to debug register number.
@@ -6093,8 +5955,7 @@ loongarch_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 }
 
 /* Implement TARGET_SHIFT_TRUNCATION_MASK.  We want to keep the default
-   behavior of TARGET_SHIFT_TRUNCATION_MASK for non-vector modes even
-   when TARGET_LOONGSON_MMI is true.  */
+   behavior of TARGET_SHIFT_TRUNCATION_MASK for non-vector modes.  */
 
 static unsigned HOST_WIDE_INT
 loongarch_shift_truncation_mask (machine_mode mode)
@@ -6414,10 +6275,6 @@ loongarch_starting_frame_offset (void)
 
 #undef TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS
 #define TARGET_CALL_FUSAGE_CONTAINS_NON_CALLEE_CLOBBERS true
-
-#undef TARGET_USE_BY_PIECES_INFRASTRUCTURE_P
-#define TARGET_USE_BY_PIECES_INFRASTRUCTURE_P \
-  loongarch_use_by_pieces_infrastructure_p
 
 #undef TARGET_SPILL_CLASS
 #define TARGET_SPILL_CLASS loongarch_spill_class

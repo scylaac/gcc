@@ -944,7 +944,7 @@ lm32-*-uclinux*)
 	;;
 loongarch*-*-linux*)
 	extra_parts="$extra_parts crtfastmath.o"
-	tmake_file="${tmake_file} t-crtfm"
+	tmake_file="${tmake_file} t-crtfm loongarch/t-crtstuff"
 	case ${host} in
 	  *)
 	    tmake_file="${tmake_file} t-slibgcc-libgcc"

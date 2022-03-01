@@ -1,5 +1,5 @@
 /* LoongArch-specific code for C family languages.
-   Copyright (C) 2021 Free Software Foundation, Inc.
+   Copyright (C) 2021-2022 Free Software Foundation, Inc.
    Contributed by Loongson Ltd.
 
 This file is part of GCC.
@@ -53,8 +53,6 @@ along with GCC; see the file COPYING3.  If not see
       free (macro);							\
     }									\
   while (0)
-
-/* TODO: what is the pfile technique ??? !!! */
 
 void
 loongarch_cpu_cpp_builtins (cpp_reader *pfile)

@@ -1,5 +1,5 @@
 /* Subroutines for loongarch-specific option handling.
-   Copyright (C) 2021 Free Software Foundation, Inc.
+   Copyright (C) 2021-2022 Free Software Foundation, Inc.
    Contributed by Loongson Ltd.
 
 This file is part of GCC.
@@ -211,7 +211,7 @@ loongarch_config_target (struct loongarch_target *target,
 	static const struct loongarch_abi default_abi
 	  = {DEFAULT_ABI_BASE, DEFAULT_ABI_EXT};
 
-	warning (0, "ABI changed (%qs -> %qs) while multilib is disabled",
+	warning (0, "ABI changed (%qs to %qs) while multilib is disabled",
 		 abi_str (default_abi), abi_str (t.abi));
       }
 #endif
@@ -270,7 +270,7 @@ config_target_isa:
   abi_tmp = t.abi;
   isa_min = &isa_required (abi_tmp);
 
-  if (isa_base_compat_p (&t.isa, isa_min)); /* OK */
+  if (isa_base_compat_p (&t.isa, isa_min)); /* OK.  */
   else if (!constrained.arch)
     {
       /* Base architecture can only be implied by -march,
@@ -301,7 +301,7 @@ config_target_isa:
   else
     goto fatal;
 
-  if (isa_fpu_compat_p (&t.isa, isa_min)); /* OK */
+  if (isa_fpu_compat_p (&t.isa, isa_min)); /* OK.  */
   else if (!constrained.fpu)
     t.isa.fpu = isa_min->fpu;
   else if (!constrained.abi_base)

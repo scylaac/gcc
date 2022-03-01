@@ -1,5 +1,5 @@
 ;; Predicate definitions for LoongArch target.
-;; Copyright (C) 2021 Free Software Foundation, Inc.
+;; Copyright (C) 2021-2022 Free Software Foundation, Inc.
 ;; Contributed by Loongson Ltd.
 ;; Based on MIPS target for GNU compiler.
 ;;
@@ -47,7 +47,7 @@
   (ior (match_operand 0 "const_arith_operand")
        (match_operand 0 "register_operand")))
 
-(define_predicate "const_immlsa_operand"
+(define_predicate "const_immalsl_operand"
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 1, 4)")))
 
@@ -241,35 +241,13 @@
   (and (match_code "const_int")
        (match_test "UINTVAL (op) == 0xfffffffffffff")))
 
-(define_predicate "shift_mask_operand"
-  (and (match_code "const_int")
-       (ior (match_test "UINTVAL (op) == 0x3fffffffc")
-	    (match_test "UINTVAL (op) == 0x1fffffffe")
-	    (match_test "UINTVAL (op) == 0x7fffffff8")
-	    (match_test "UINTVAL (op) == 0xffffffff0"))))
-
 (define_predicate "si_mask_operand"
   (and (match_code "const_int")
        (match_test "UINTVAL (op) == 0xffffffff")))
 
-(define_predicate "and_load_operand"
-  (ior (match_operand 0 "qi_mask_operand")
-       (match_operand 0 "hi_mask_operand")
-       (match_operand 0 "si_mask_operand")))
-
 (define_predicate "low_bitmask_operand"
   (and (match_code "const_int")
        (match_test "low_bitmask_len (mode, INTVAL (op)) > 12")))
-
-(define_predicate "and_reg_operand"
-  (ior (match_operand 0 "register_operand")
-       (match_operand 0 "const_uns_arith_operand")
-       (match_operand 0 "low_bitmask_operand")
-       (match_operand 0 "si_mask_operand")))
-
-(define_predicate "and_operand"
-  (ior (match_operand 0 "and_load_operand")
-       (match_operand 0 "and_reg_operand")))
 
 (define_predicate "d_operand"
   (and (match_code "reg")

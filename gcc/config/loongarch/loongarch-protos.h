@@ -1,5 +1,5 @@
 /* Prototypes of target machine for GNU compiler.  LoongArch version.
-   Copyright (C) 2021 Free Software Foundation, Inc.
+   Copyright (C) 2021-2022 Free Software Foundation, Inc.
    Contributed by Loongson Ltd.
    Based on MIPS target for GNU compiler.
 
@@ -138,7 +138,6 @@ extern void loongarch_expand_conditional_trap (rtx);
 #endif
 extern void loongarch_set_return_address (rtx, rtx);
 extern bool loongarch_move_by_pieces_p (unsigned HOST_WIDE_INT, unsigned int);
-extern bool loongarch_store_by_pieces_p (unsigned HOST_WIDE_INT, unsigned int);
 extern bool loongarch_expand_block_move (rtx, rtx, rtx);
 
 extern bool loongarch_expand_ext_as_unaligned_load (rtx, rtx, HOST_WIDE_INT,

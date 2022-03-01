@@ -1,5 +1,5 @@
 /* Subroutines for the gcc driver.
-   Copyright (C) 2021 Free Software Foundation, Inc.
+   Copyright (C) 2021-2022 Free Software Foundation, Inc.
    Contributed by Loongson Ltd.
 
 This file is part of GCC.
@@ -129,7 +129,7 @@ driver_get_normalized_m_opts (int argc, const char **argv)
 {
   if (argc != 0)
     {
-      (void) argv;  /* to make compiler shut up about unused argument */
+      (void) argv;  /* To make compiler shut up about unused argument.  */
       return " %eget_normalized_m_opts requires no argument.\n";
     }
 

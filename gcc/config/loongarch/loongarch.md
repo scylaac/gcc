@@ -1,5 +1,5 @@
 ;; Machine Description for LoongArch for GNU compiler.
-;; Copyright (C) 2021 Free Software Foundation, Inc.
+;; Copyright (C) 2021-2022 Free Software Foundation, Inc.
 ;; Contributed by Loongson Ltd.
 ;; Based on MIPS target for GNU compiler.
 
@@ -32,56 +32,18 @@
   UNSPEC_MOVGR2FRH
   UNSPEC_MOVFRH2GR
 
-  ;; Floating-point environment.
-  UNSPEC_MOVFCSR2GR
-  UNSPEC_MOVGR2FCSR
-
-  ;; GP manipulation.
-  UNSPEC_EH_RETURN
-
-  ;;
+  ;; Floating point unspecs.
   UNSPEC_FRINT
   UNSPEC_FCLASS
+
+  ;; Override return address for exception handling.
+  UNSPEC_EH_RETURN
+
+  ;; Bit operation
   UNSPEC_BYTEPICK_W
   UNSPEC_BYTEPICK_D
   UNSPEC_BITREV_4B
   UNSPEC_BITREV_8B
-
-  ;; Symbolic accesses.
-  UNSPEC_LOAD_CALL
-
-  ;; Blockage and synchronisation.
-  UNSPEC_BLOCKAGE
-  UNSPEC_DBAR
-  UNSPEC_IBAR
-
-  ;; CPUCFG
-  UNSPEC_CPUCFG
-  UNSPEC_ASRTLE_D
-  UNSPEC_ASRTGT_D
-
-  UNSPEC_CSRRD
-  UNSPEC_CSRWR
-  UNSPEC_CSRXCHG
-  UNSPEC_IOCSRRD
-  UNSPEC_IOCSRWR
-
-  ;; CACOP
-  UNSPEC_CACOP
-
-  ;; PTE
-  UNSPEC_LDDIR
-  UNSPEC_LDPTE
-
-  ;; Interrupt handling.
-  UNSPEC_ERTN
-
-  ;; Used in a call expression in place of args_size.  It's present for PIC
-  ;; indirect calls where it contains args_size and the function symbol.
-  UNSPEC_CALL_ATTR
-
-  ;; Stack checking.
-  UNSPEC_PROBE_STACK_RANGE
 
   ;; TLS
   UNSPEC_TLS_GD
@@ -89,18 +51,43 @@
   UNSPEC_TLS_LE
   UNSPEC_TLS_IE
 
-  ;; load immediate
-  UNSPEC_LU52I_D
-
+  ;; Stack tie
   UNSPEC_TIE
-
-  ;; Register save and restore.
-  UNSPECV_GPR_SAVE
-  UNSPECV_GPR_RESTORE
 
   ;; CRC
   UNSPEC_CRC
   UNSPEC_CRCC
+])
+
+(define_c_enum "unspecv" [
+  ;; Blockage and synchronisation.
+  UNSPECV_BLOCKAGE
+  UNSPECV_DBAR
+  UNSPECV_IBAR
+
+  ;; CPUCFG
+  UNSPECV_CPUCFG
+  UNSPECV_ASRTLE_D
+  UNSPECV_ASRTGT_D
+
+  ;; Privileged instructions
+  UNSPECV_CSRRD
+  UNSPECV_CSRWR
+  UNSPECV_CSRXCHG
+  UNSPECV_IOCSRRD
+  UNSPECV_IOCSRWR
+  UNSPECV_CACOP
+  UNSPECV_LDDIR
+  UNSPECV_LDPTE
+  UNSPECV_ERTN
+
+  ;; Stack checking.
+  UNSPECV_PROBE_STACK_RANGE
+
+  ;; Floating-point environment.
+  UNSPECV_MOVFCSR2GR
+  UNSPECV_MOVGR2FCSR
+
 ])
 
 (define_constants
@@ -196,8 +183,8 @@
 ;; prefetch	memory prefetch (register + offset)
 ;; prefetchx	memory indexed prefetch (register + register)
 ;; condmove	conditional moves
-;; mgtf		move generate register to float register
-;; mftg		move float register to generate register
+;; mgtf		move general-purpose register to floating point register
+;; mftg		move floating point register to general-purpose register
 ;; const	load constant
 ;; arith	integer arithmetic instructions
 ;; logical      integer logical instructions
@@ -207,8 +194,8 @@
 ;; clz		the clz and clo instructions
 ;; trap		trap if instructions
 ;; imul		integer multiply
-;; idiv	integer divide
-;; move		integer register move ({,D}ADD{,U} with rt = 0)
+;; idiv		integer divide
+;; move		integer move
 ;; fmove	floating point register move
 ;; fadd		floating point add/subtract
 ;; fmul		floating point multiply
@@ -337,68 +324,17 @@
 ;; Length of instruction in bytes.
 (define_attr "length" ""
    (cond [
-	;; Branch instructions have a range of [-0x20000,0x1fffc].
-	;; If a branch is outside this range, we have a choice of two
-	;; sequences.
-	;;
-	;; For PIC, an out-of-range branch like:
-	;;
-	;;    bne     r1,r2,target
-	;;
-	;; becomes the equivalent of:
-	;;
-	;;    beq     r1,r2,1f
-	;;    la      rd,target
-	;;    jirl    $r0,rd,0
-	;; 1:
-	;;
-	;; The non-PIC case is similar except that we use a direct
-	;; jump instead of an la/jirl pair.  Since the target of this
-	;; jump is an absolute 28-bit bit address (the other bits
-	;; coming from the address of the delay slot) this form cannot
-	;; cross a 256MB boundary.  We could provide the option of
-	;; using la/jirl in this case too, but we do not do so at
-	;; present.
-	;;
-	;; from the shorten_branches reference address.
+	  ;; Branch futher than +/- 128 KiB require two instructions.
 	  (eq_attr "type" "branch")
-	  (cond [;; Any variant can handle the 17-bit range.
-		(and (le (minus (match_dup 0) (pc)) (const_int 65532))
-		     (le (minus (pc) (match_dup 0)) (const_int 65534)))
-		(const_int 4)
-
-		;; The non-PIC case: branch, and J.
-		(match_test "!flag_pic")
-		(const_int 8)]
-
-		;; Use MAX_PIC_BRANCH_LENGTH as a (gross) overestimate.
-		;; loongarch_adjust_insn_length substitutes the correct length.
-		;;
-		;; Note that we can't simply use (symbol_ref ...) here
-		;; because genattrtab needs to know the maximum length
-		;; of an insn.
-		(const_int MAX_PIC_BRANCH_LENGTH))]
-	(symbol_ref "get_attr_insn_count (insn) * 4")))
-
-;; Attribute describing the processor.
-;; The type of hardware hazard associated with this instruction.
-;; DELAY means that the next instruction cannot read the result
-;; of this one.
-(define_attr "hazard" "none,delay,forbidden_slot"
-  (const_string "none"))
-
-;; Can the instruction be put into a delay slot?
-(define_attr "can_delay" "no,yes"
-  (if_then_else (and (eq_attr "type" "!branch,call,jump")
-		     (eq_attr "hazard" "none")
-		     (match_test "get_attr_insn_count (insn) == 1"))
-		(const_string "yes")
-		(const_string "no")))
+	  (if_then_else (and (le (minus (match_dup 0) (pc)) (const_int 131064))
+			     (le (minus (pc) (match_dup 0)) (const_int 131068)))
+	  (const_int 4)
+	  (const_int 8))
+	  ](symbol_ref "get_attr_insn_count (insn) * 4")))
 
 ;; Describe a user's asm statement.
 (define_asm_attributes
-  [(set_attr "type" "multi")
-   (set_attr "can_delay" "no")])
+  [(set_attr "type" "multi")])
 
 ;; This mode iterator allows 32-bit and 64-bit GPR patterns to be generated
 ;; from the same template.
@@ -577,7 +513,7 @@
 			(mod "mod")
 			(umod "mod")])
 
-;; <fcond> is the c.cond.fmt condition associated with a particular code.
+;; <fcond> is the fcmp.cond.fmt condition associated with a particular code.
 (define_code_attr fcond [(unordered "cun")
 			 (uneq "cueq")
 			 (unlt "cult")
@@ -1333,28 +1269,13 @@
    (set_attr "mode" "DI")
    (set_attr "insn_count" "1,2,1")])
 
-(define_insn "*zero_extendsidi2_internal"
-  [(set (match_operand:DI 0 "register_operand" "=r,r,r")
-	(subreg:DI (match_operand:SI 1 "nonimmediate_operand" "r,ZC,W") 0))]
-  "TARGET_64BIT"
-  "@
-   bstrpick.d\t%0,%1,31,0
-   ldptr.w\t%0,%1\n\tlu32i.d\t%0,0
-   ld.wu\t%0,%1"
-  [(set_attr "move_type" "arith,load,load")
-   (set_attr "mode" "DI")
-   (set_attr "insn_count" "1,2,1")])
-
-;; See the comment before the *and<mode>3 pattern why this is generated by
-;; combine.
-
 (define_insn "zero_extend<SHORT:mode><GPR:mode>2"
   [(set (match_operand:GPR 0 "register_operand" "=r,r")
 	(zero_extend:GPR
 	     (match_operand:SHORT 1 "nonimmediate_operand" "r,m")))]
   ""
   "@
-   bstrpick.<d>\t%0,%1,<SHORT:qi_hi>,0
+   bstrpick.w\t%0,%1,<SHORT:qi_hi>,0
    ld.<SHORT:size>u\t%0,%1"
   [(set_attr "move_type" "pick_ins,load")
    (set_attr "compression" "*,*")
@@ -1377,7 +1298,7 @@
 	(zero_extend:GPR
 	    (truncate:SHORT (match_operand:DI 1 "register_operand" "r"))))]
   "TARGET_64BIT"
-  "bstrpick.<d>\t%0,%1,<SHORT:qi_hi>,0"
+  "bstrpick.w\t%0,%1,<SHORT:qi_hi>,0"
   [(set_attr "move_type" "pick_ins")
    (set_attr "mode" "<GPR:MODE>")])
 
@@ -1400,19 +1321,16 @@
 ;; Extension insns.
 ;; Those for integer source operand are ordered widest source type first.
 
-;; When TARGET_64BIT, all SImode integer and accumulator registers
-;; should already be in sign-extended form (see TARGET_TRULY_NOOP_TRUNCATION
-;; and truncdisi2).  We can therefore get rid of register->register
-;; instructions if we constrain the source to be in the same register as
-;; the destination.
+;; When TARGET_64BIT, all SImode integer should already be in sign-extended
+;; form (see TARGET_TRULY_NOOP_TRUNCATION and truncdisi2).  We can therefore
+;; get rid of register->register instructions if we constrain the source to
+;; be in the same register as the destination.
 ;;
 ;; Only the pre-reload scheduler sees the type of the register alternatives;
 ;; we split them into nothing before the post-reload scheduler runs.
 ;; These alternatives therefore have type "move" in order to reflect
 ;; what happens if the two pre-reload operands cannot be tied, and are
-;; instead allocated two separate GPRs.  We don't distinguish between
-;; the GPR and LO cases because we don't usually know during pre-reload
-;; scheduling whether an operand will be LO or not.
+;; instead allocated two separate GPRs.
 (define_insn_and_split "extendsidi2"
   [(set (match_operand:DI 0 "register_operand" "=r,r,r")
 	(sign_extend:DI (match_operand:SI 1 "nonimmediate_operand" "0,ZC,m")))]
@@ -1452,66 +1370,31 @@
   [(set_attr "move_type" "signext,load")
    (set_attr "mode" "SI")])
 
-;; Combiner patterns for truncate/sign_extend combinations.  The SI versions
-;; use the shift/truncate patterns.
-
-(define_insn_and_split "*extenddi_truncate<mode>"
+(define_insn "*extenddi_truncate<mode>"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(sign_extend:DI
 	    (truncate:SHORT (match_operand:DI 1 "register_operand" "r"))))]
   "TARGET_64BIT"
-  "#"
-  "&& reload_completed"
-  [(set (match_dup 2)
-	(ashift:DI (match_dup 1)
-		   (match_dup 3)))
-   (set (match_dup 0)
-	(ashiftrt:DI (match_dup 2)
-		     (match_dup 3)))]
-{
-  operands[2] = gen_lowpart (DImode, operands[0]);
-  operands[3] = GEN_INT (BITS_PER_WORD - GET_MODE_BITSIZE (<MODE>mode));
-}
-  [(set_attr "move_type" "shift_shift")
+  "ext.w.<size>\t%0,%1"
+  [(set_attr "move_type" "signext")
    (set_attr "mode" "DI")])
 
-(define_insn_and_split "*extendsi_truncate<mode>"
+(define_insn "*extendsi_truncate<mode>"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(sign_extend:SI
 	    (truncate:SHORT (match_operand:DI 1 "register_operand" "r"))))]
   "TARGET_64BIT"
-  "#"
-  "&& reload_completed"
-  [(set (match_dup 2)
-	(ashift:DI (match_dup 1)
-		   (match_dup 3)))
-   (set (match_dup 0)
-	(truncate:SI (ashiftrt:DI (match_dup 2)
-				  (match_dup 3))))]
-{
-  operands[2] = gen_lowpart (DImode, operands[0]);
-  operands[3] = GEN_INT (BITS_PER_WORD - GET_MODE_BITSIZE (<MODE>mode));
-}
-  [(set_attr "move_type" "shift_shift")
+  "ext.w.<size>\t%0,%1"
+  [(set_attr "move_type" "signext")
    (set_attr "mode" "SI")])
 
-(define_insn_and_split "*extendhi_truncateqi"
+(define_insn "*extendhi_truncateqi"
   [(set (match_operand:HI 0 "register_operand" "=r")
 	(sign_extend:HI
 	    (truncate:QI (match_operand:DI 1 "register_operand" "r"))))]
   "TARGET_64BIT"
-  "#"
-  "&& reload_completed"
-  [(set (match_dup 2)
-	(ashift:DI (match_dup 1)
-		   (const_int 56)))
-   (set (match_dup 0)
-	(truncate:HI (ashiftrt:DI (match_dup 2)
-				  (const_int 56))))]
-{
-  operands[2] = gen_lowpart (DImode, operands[0]);
-}
-  [(set_attr "move_type" "shift_shift")
+  "ext.w.b\t%0,%1"
+  [(set_attr "move_type" "signext")
    (set_attr "mode" "SI")])
 
 (define_insn "extendsfdf2"
@@ -1581,7 +1464,6 @@
    (set_attr "mode" "DF")
    (set_attr "cnv_mode"	"I2D")])
 
-
 (define_insn "floatdidf2"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(float:DF (match_operand:DI 1 "register_operand" "f")))]
@@ -1591,7 +1473,6 @@
    (set_attr "mode" "DF")
    (set_attr "cnv_mode" "I2D")])
 
-
 (define_insn "floatsisf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(float:SF (match_operand:SI 1 "register_operand" "f")))]
@@ -1600,7 +1481,6 @@
   [(set_attr "type" "fcvt")
    (set_attr "mode" "SF")
    (set_attr "cnv_mode"	"I2S")])
-
 
 (define_insn "floatdisf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
@@ -1659,7 +1539,6 @@
     }
 })
 
-
 (define_expand "fixuns_truncdfdi2"
   [(set (match_operand:DI 0 "register_operand")
 	(unsigned_fix:DI (match_operand:DF 1 "register_operand")))]
@@ -1701,7 +1580,6 @@
   DONE;
 })
 
-
 (define_expand "fixuns_truncsfsi2"
   [(set (match_operand:SI 0 "register_operand")
 	(unsigned_fix:SI (match_operand:SF 1 "register_operand")))]
@@ -1742,7 +1620,6 @@
   emit_use (stack_pointer_rtx);
   DONE;
 })
-
 
 (define_expand "fixuns_truncsfdi2"
   [(set (match_operand:DI 0 "register_operand")
@@ -1843,7 +1720,6 @@
 }
   [(set_attr "type" "arith")
    (set_attr "mode" "<MODE>")])
-
 
 ;;
 ;;  ....................
@@ -2004,7 +1880,6 @@
   [(set_attr "move_type" "move,load,store")
    (set_attr "mode" "SF")])
 
-
 ;; 64-bit floating point moves
 
 (define_expand "movdf"
@@ -2061,7 +1936,6 @@
 		      (const_string "SI")
 		      (const_string "TI")))])
 
-
 ;; 128-bit floating point moves
 
 (define_expand "movtf"
@@ -2083,7 +1957,6 @@
   "#"
   [(set_attr "move_type" "move,load,store,mgtf,mftg,fpload,fpstore")
    (set_attr "mode" "TF")])
-
 
 (define_split
   [(set (match_operand:MOVE64 0 "nonimmediate_operand")
@@ -2108,7 +1981,7 @@
 ;; Emit a doubleword move in which exactly one of the operands is
 ;; a floating-point register.  We can't just emit two normal moves
 ;; because of the constraints imposed by the FPU register model;
-;; see loongarch_cannot_change_mode_class for details.  Instead, we keep
+;; see loongarch_can_change_mode_class for details.  Instead, we keep
 ;; the FPR whole and use special patterns to refer to each word of
 ;; the other operand.
 
@@ -2202,7 +2075,7 @@
   loongarch_expand_conditional_move (operands);
   DONE;
 })
-;; lu32i.d
+
 (define_insn "lu32i_d"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ior:DI
@@ -2213,8 +2086,6 @@
   "lu32i.d\t%0,%X2>>32"
   [(set_attr "type" "arith")
    (set_attr "mode" "DI")])
-
-;; lu52i.d
 
 (define_insn "lu52i_d"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -2228,7 +2099,6 @@
      (set_attr "mode" "DI")])
 
 ;; Convert floating-point numbers to integers
-
 (define_insn "frint_<fmt>"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
 	(unspec:ANYF [(match_operand:ANYF 1 "register_operand" "f")]
@@ -2239,9 +2109,9 @@
    (set_attr "mode" "<MODE>")])
 
 ;; LoongArch supports loading and storing a floating point register from
-;; the sum of two general registers.  We use two versions for each of
-;; these four instructions: one where the two general registers are
-;; SImode, and one where they are DImode.  This is because general
+;; the sum of two general-purpose registers.  We use two versions for each of
+;; these four instructions: one where the two general-purpose registers are
+;; SImode, and one where they are DImode.  This is because general-purpose
 ;; registers will be in SImode when they hold 32-bit values, but,
 ;; since the 32-bit values are always sign extended, the f{ld/st}x.{s/d}
 ;; instructions will still work correctly.
@@ -2269,7 +2139,7 @@
   [(set_attr "type" "fpidxstore")
    (set_attr "mode" "<ANYF:UNITMODE>")])
 
-;; loading and storing a integer register from the sum of two general
+;; loading and storing a integer register from the sum of two general-purpose
 ;; registers.
 
 (define_insn "*<GPR:loadx>_<P:mode>"
@@ -2397,7 +2267,7 @@
   [(set_attr "got" "load")
    (set_attr "mode" "<MODE>")])
 
-;; Move operand 1 to the high word of operand 0 using movgr2frh, preserving the
+;; Move operand 1 to the high word of operand 0 using movgr2frh.w, preserving the
 ;; value in the low word.
 (define_insn "movgr2frh<mode>"
   [(set (match_operand:SPLITF 0 "register_operand" "=f")
@@ -2409,7 +2279,7 @@
   [(set_attr "move_type" "mgtf")
    (set_attr "mode" "<HALFMODE>")])
 
-;; Move high word of operand 1 to operand 0 using movfrh2gr.
+;; Move high word of operand 1 to operand 0 using movfrh2gr.s.
 (define_insn "movfrh2gr<mode>"
   [(set (match_operand:<HALFMODE> 0 "register_operand" "=r")
 	(unspec:<HALFMODE> [(match_operand:SPLITF 1 "register_operand" "f")]
@@ -2433,12 +2303,12 @@
 }")
 
 (define_insn "ibar"
-  [(unspec_volatile:SI [(match_operand 0 "const_uimm15_operand")] UNSPEC_IBAR)]
+  [(unspec_volatile:SI [(match_operand 0 "const_uimm15_operand")] UNSPECV_IBAR)]
   ""
   "ibar\t%0")
 
 (define_insn "dbar"
-  [(unspec_volatile:SI [(match_operand 0 "const_uimm15_operand")] UNSPEC_DBAR)]
+  [(unspec_volatile:SI [(match_operand 0 "const_uimm15_operand")] UNSPECV_DBAR)]
   ""
   "dbar\t%0")
 
@@ -2449,7 +2319,7 @@
 (define_insn "cpucfg"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(unspec_volatile:SI [(match_operand:SI 1 "register_operand" "r")]
-			     UNSPEC_CPUCFG))]
+			     UNSPECV_CPUCFG))]
   ""
   "cpucfg\t%0,%1"
   [(set_attr "type" "load")
@@ -2458,7 +2328,7 @@
 (define_insn "asrtle_d"
 	[(unspec_volatile:DI [(match_operand:DI 0 "register_operand" "r")
 			      (match_operand:DI 1 "register_operand" "r")]
-			      UNSPEC_ASRTLE_D)]
+			      UNSPECV_ASRTLE_D)]
   "TARGET_64BIT"
   "asrtle.d\t%0,%1"
   [(set_attr "type" "load")
@@ -2467,7 +2337,7 @@
 (define_insn "asrtgt_d"
 	[(unspec_volatile:DI [(match_operand:DI 0 "register_operand" "r")
 			      (match_operand:DI 1 "register_operand" "r")]
-			      UNSPEC_ASRTGT_D)]
+			      UNSPECV_ASRTGT_D)]
   "TARGET_64BIT"
   "asrtgt.d\t%0,%1"
   [(set_attr "type" "load")
@@ -2476,7 +2346,7 @@
 (define_insn "<p>csrrd"
   [(set (match_operand:GPR 0 "register_operand" "=r")
 	(unspec_volatile:GPR [(match_operand  1 "const_uimm14_operand")]
-			     UNSPEC_CSRRD))]
+			     UNSPECV_CSRRD))]
   ""
   "csrrd\t%0,%1"
   [(set_attr "type" "load")
@@ -2487,7 +2357,7 @@
 	  (unspec_volatile:GPR
 	  [(match_operand:GPR 1 "register_operand" "0")
 	   (match_operand 2 "const_uimm14_operand")]
-	  UNSPEC_CSRWR))]
+	  UNSPECV_CSRWR))]
   ""
   "csrwr\t%0,%2"
   [(set_attr "type" "store")
@@ -2499,7 +2369,7 @@
 	  [(match_operand:GPR 1 "register_operand" "0")
 	   (match_operand:GPR 2 "register_operand" "q")
 	   (match_operand 3 "const_uimm14_operand")]
-	  UNSPEC_CSRXCHG))]
+	  UNSPECV_CSRXCHG))]
   ""
   "csrxchg\t%0,%2,%3"
   [(set_attr "type" "load")
@@ -2508,7 +2378,7 @@
 (define_insn "iocsrrd_<size>"
   [(set (match_operand:QHWD 0 "register_operand" "=r")
 	(unspec_volatile:QHWD [(match_operand:SI 1 "register_operand" "r")]
-			      UNSPEC_IOCSRRD))]
+			      UNSPECV_IOCSRRD))]
   ""
   "iocsrrd.<size>\t%0,%1"
   [(set_attr "type" "load")
@@ -2517,7 +2387,7 @@
 (define_insn "iocsrwr_<size>"
   [(unspec_volatile:QHWD [(match_operand:QHWD 0 "register_operand" "r")
 			  (match_operand:SI 1 "register_operand" "r")]
-			UNSPEC_IOCSRWR)]
+			UNSPECV_IOCSRWR)]
   ""
   "iocsrwr.<size>\t%0,%1"
   [(set_attr "type" "load")
@@ -2527,7 +2397,7 @@
   [(unspec_volatile:X [(match_operand 0 "const_uimm5_operand")
 			 (match_operand:X 1 "register_operand" "r")
 			 (match_operand 2 "const_imm12_operand")]
-			 UNSPEC_CACOP)]
+			 UNSPECV_CACOP)]
   ""
   "cacop\t%0,%1,%2"
   [(set_attr "type" "load")
@@ -2537,7 +2407,7 @@
   [(unspec_volatile:X [(match_operand:X 0 "register_operand" "r")
 			 (match_operand:X 1 "register_operand" "r")
 			 (match_operand 2 "const_uimm5_operand")]
-			 UNSPEC_LDDIR)]
+			 UNSPECV_LDDIR)]
   ""
   "lddir\t%0,%1,%2"
   [(set_attr "type" "load")
@@ -2546,7 +2416,7 @@
 (define_insn "<p>ldpte"
   [(unspec_volatile:X [(match_operand:X 0 "register_operand" "r")
 			 (match_operand 1 "const_uimm5_operand")]
-			 UNSPEC_LDPTE)]
+			 UNSPECV_LDPTE)]
   ""
   "ldpte\t%0,%1"
   [(set_attr "type" "load")
@@ -2554,10 +2424,10 @@
 
 
 ;; Block moves, see loongarch.c for more details.
-;; Argument 0 is the destination
-;; Argument 1 is the source
-;; Argument 2 is the length
-;; Argument 3 is the alignment
+;; Argument 0 is the destination.
+;; Argument 1 is the source.
+;; Argument 2 is the length.
+;; Argument 3 is the alignment.
 
 (define_expand "cpymemsi"
   [(parallel [(set (match_operand:BLK 0 "general_operand")
@@ -2619,61 +2489,72 @@
   [(set_attr "type" "shift,shift")
    (set_attr "mode" "<MODE>")])
 
+;; The following templates were added to generate "bstrpick.d + alsl.d"
+;; instruction pairs.
+;; It is required that the values of const_immalsl_operand and
+;; immediate_operand must have the following correspondence:
+;;
+;; (immediate_operand >> const_immalsl_operand) == 0xffffffff
+
 (define_insn "zero_extend_ashift1"
- [ (set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "register_operand" "=r")
 	(and:DI (ashift:DI (subreg:DI (match_operand:SI 1 "register_operand" "r") 0)
-			   (match_operand 2 "const_immlsa_operand" ""))
-		(match_operand 3 "shift_mask_operand" "")))]
-"TARGET_64BIT"
-"bstrpick.d\t%0,%1,31,0\n\talsl.d\t%0,%0,$r0,%2"
-[(set_attr "type" "arith")
- (set_attr "mode" "DI")
- (set_attr "insn_count" "2")])
+			   (match_operand 2 "const_immalsl_operand" ""))
+		(match_operand 3 "immediate_operand" "")))]
+  "TARGET_64BIT
+   && ((INTVAL (operands[3]) >> INTVAL (operands[2])) == 0xffffffff)"
+  "bstrpick.d\t%0,%1,31,0\n\talsl.d\t%0,%0,$r0,%2"
+  [(set_attr "type" "arith")
+   (set_attr "mode" "DI")
+   (set_attr "insn_count" "2")])
 
 (define_insn "zero_extend_ashift2"
- [ (set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "register_operand" "=r")
 	(and:DI (ashift:DI (match_operand:DI 1 "register_operand" "r")
-			   (match_operand 2 "const_immlsa_operand" ""))
-		(match_operand 3 "shift_mask_operand" "")))]
-"TARGET_64BIT"
-"bstrpick.d\t%0,%1,31,0\n\talsl.d\t%0,%0,$r0,%2"
-[(set_attr "type" "arith")
- (set_attr "mode" "DI")
- (set_attr "insn_count" "2")])
+			   (match_operand 2 "const_immalsl_operand" ""))
+		(match_operand 3 "immediate_operand" "")))]
+  "TARGET_64BIT
+   && ((INTVAL (operands[3]) >> INTVAL (operands[2])) == 0xffffffff)"
+  "bstrpick.d\t%0,%1,31,0\n\talsl.d\t%0,%0,$r0,%2"
+  [(set_attr "type" "arith")
+   (set_attr "mode" "DI")
+   (set_attr "insn_count" "2")])
 
 (define_insn "alsl_paired1"
- [(set (match_operand:DI 0 "register_operand" "=&r")
+  [(set (match_operand:DI 0 "register_operand" "=&r")
 	(plus:DI (and:DI (ashift:DI (subreg:DI (match_operand:SI 1 "register_operand" "r") 0)
-			   (match_operand 2 "const_immlsa_operand" ""))
-			(match_operand 3 "shift_mask_operand" ""))
-		(match_operand:DI 4 "register_operand" "r")))]
- "TARGET_64BIT"
- "bstrpick.d\t%0,%1,31,0\n\talsl.d\t%0,%0,%4,%2"
- [(set_attr "type" "arith")
+				    (match_operand 2 "const_immalsl_operand" ""))
+			 (match_operand 3 "immediate_operand" ""))
+		 (match_operand:DI 4 "register_operand" "r")))]
+  "TARGET_64BIT
+   && ((INTVAL (operands[3]) >> INTVAL (operands[2])) == 0xffffffff)"
+  "bstrpick.d\t%0,%1,31,0\n\talsl.d\t%0,%0,%4,%2"
+  [(set_attr "type" "arith")
   (set_attr "mode" "DI")
   (set_attr "insn_count" "2")])
 
 (define_insn "alsl_paired2"
- [(set (match_operand:DI 0 "register_operand" "=&r")
+  [(set (match_operand:DI 0 "register_operand" "=&r")
 	(plus:DI (match_operand:DI 1 "register_operand" "r")
-		(and:DI (ashift:DI (match_operand:DI 2 "register_operand" "r")
-			   (match_operand 3 "const_immlsa_operand" ""))
-			(match_operand 4 "shift_mask_operand" ""))))]
- "TARGET_64BIT"
- "bstrpick.d\t%0,%2,31,0\n\talsl.d\t%0,%0,%1,%3"
- [(set_attr "type" "arith")
-  (set_attr "mode" "DI")
-  (set_attr "insn_count" "2")])
+		 (and:DI (ashift:DI (match_operand:DI 2 "register_operand" "r")
+				    (match_operand 3 "const_immalsl_operand" ""))
+			 (match_operand 4 "immediate_operand" ""))))]
+  "TARGET_64BIT
+   && ((INTVAL (operands[4]) >> INTVAL (operands[3])) == 0xffffffff)"
+  "bstrpick.d\t%0,%2,31,0\n\talsl.d\t%0,%0,%1,%3"
+  [(set_attr "type" "arith")
+   (set_attr "mode" "DI")
+   (set_attr "insn_count" "2")])
 
 (define_insn "alsl<mode>3"
- [(set (match_operand:GPR 0 "register_operand" "=r")
+  [(set (match_operand:GPR 0 "register_operand" "=r")
 	(plus:GPR (ashift:GPR (match_operand:GPR 1 "register_operand" "r")
-			     (match_operand 2 "const_immlsa_operand" ""))
-		(match_operand:GPR 3 "register_operand" "r")))]
- ""
- "alsl.<d>\t%0,%1,%3,%2"
- [(set_attr "type" "arith")
-  (set_attr "mode" "<MODE>")])
+			      (match_operand 2 "const_immalsl_operand" ""))
+		  (match_operand:GPR 3 "register_operand" "r")))]
+  ""
+  "alsl.<d>\t%0,%1,%3,%2"
+  [(set_attr "type" "arith")
+   (set_attr "mode" "<MODE>")])
 
 
 
@@ -2782,8 +2663,7 @@
 	 (pc)))]
   ""
   { return loongarch_output_order_conditional_branch (insn, operands, false); }
-  [(set_attr "type" "branch")
-   (set_attr "hazard" "forbidden_slot")])
+  [(set_attr "type" "branch")])
 
 (define_insn "*branch_order<mode>_inverted"
   [(set (pc)
@@ -2795,8 +2675,7 @@
 	 (label_ref (match_operand 0 "" ""))))]
   ""
   { return loongarch_output_order_conditional_branch (insn, operands, true); }
-  [(set_attr "type" "branch")
-   (set_attr "hazard" "forbidden_slot")])
+  [(set_attr "type" "branch")])
 
 ;; Conditional branch on equality comparison.
 
@@ -2810,8 +2689,7 @@
 	 (pc)))]
   ""
   { return loongarch_output_equal_conditional_branch (insn, operands, false); }
-  [(set_attr "type" "branch")
-   (set_attr "hazard" "forbidden_slot")])
+  [(set_attr "type" "branch")])
 
 
 (define_insn "*branch_equality<mode>_inverted"
@@ -2824,8 +2702,7 @@
 	 (label_ref (match_operand 0 "" ""))))]
   ""
   { return loongarch_output_equal_conditional_branch (insn, operands, true); }
-  [(set_attr "type" "branch")
-   (set_attr "hazard" "forbidden_slot")])
+  [(set_attr "type" "branch")])
 
 
 (define_expand "cbranch<mode>4"
@@ -3057,7 +2934,7 @@
 ;; saved or used to pass arguments.
 
 (define_insn "blockage"
-  [(unspec_volatile [(const_int 0)] UNSPEC_BLOCKAGE)]
+  [(unspec_volatile [(const_int 0)] UNSPECV_BLOCKAGE)]
   ""
   ""
   [(set_attr "type" "ghost")
@@ -3068,7 +2945,7 @@
 	(unspec_volatile:P [(match_operand:P 1 "register_operand" "0")
 			    (match_operand:P 2 "register_operand" "r")
 			    (match_operand:P 3 "register_operand" "r")]
-			    UNSPEC_PROBE_STACK_RANGE))]
+			    UNSPECV_PROBE_STACK_RANGE))]
   ""
 {
   return loongarch_output_probe_stack_range (operands[0],
@@ -3076,7 +2953,6 @@
 					     operands[3]);
 }
   [(set_attr "type" "unknown")
-   (set_attr "can_delay" "no")
    (set_attr "mode" "<MODE>")])
 
 (define_expand "epilogue"
@@ -3133,7 +3009,7 @@
 ;; Exception return.
 (define_insn "loongarch_ertn"
   [(return)
-   (unspec_volatile [(const_int 0)] UNSPEC_ERTN)]
+   (unspec_volatile [(const_int 0)] UNSPECV_ERTN)]
   ""
   "ertn"
   [(set_attr "type"	"trap")
@@ -3257,7 +3133,7 @@
 {
   rtx target = loongarch_legitimize_call_address (XEXP (operands[1], 0));
 
- /*  Handle return values created by loongarch_return_fpr_pair.  */
+ /*  Handle return values created by loongarch_pass_fpr_pair.  */
   if (GET_CODE (operands[0]) == PARALLEL && XVECLEN (operands[0], 0) == 2)
     {
       rtx arg1 = XEXP (XVECEXP (operands[0],0, 0), 0);
@@ -3445,7 +3321,7 @@
   ""
 {
   rtx target = loongarch_legitimize_call_address (XEXP (operands[1], 0));
- /*  Handle return values created by loongarch_return_fpr_pair.  */
+ /*  Handle return values created by loongarch_pass_fpr_pair.  */
   if (GET_CODE (operands[0]) == PARALLEL && XVECLEN (operands[0], 0) == 2)
     {
       rtx arg1 = XEXP (XVECEXP (operands[0], 0, 0), 0);
@@ -3466,7 +3342,6 @@
   DONE;
 })
 
-;; See comment for call_internal.
 (define_insn "call_value_internal"
   [(set (match_operand 0 "register_operand" "")
 	(call (mem:SI (match_operand 1 "call_insn_operand" "e,c,a,t,h"))
@@ -3516,7 +3391,6 @@
   [(set_attr "jirl" "indirect,direct,direct,direct,direct")
    (set_attr "insn_count" "1,2,3,3,2")])
 
-;; See comment for call_internal.
 (define_insn "call_value_multiple_internal"
   [(set (match_operand 0 "register_operand" "")
 	(call (mem:SI (match_operand 1 "call_insn_operand" "e,c,a,t,h"))
@@ -3571,7 +3445,6 @@
 
 
 ;; Call subroutine returning any type.
-
 (define_expand "untyped_call"
   [(parallel [(call (match_operand 0 "")
 		    (const_int 0))
@@ -3612,7 +3485,7 @@
 (define_insn "loongarch_movfcsr2gr"
   [(set (match_operand:SI 0 "register_operand" "=r")
     (unspec_volatile:SI [(match_operand 1 "const_uimm5_operand")]
-    UNSPEC_MOVFCSR2GR))]
+    UNSPECV_MOVFCSR2GR))]
   "TARGET_HARD_FLOAT"
   "movfcsr2gr\t%0,$r%1")
 
@@ -3620,7 +3493,7 @@
 (define_insn "loongarch_movgr2fcsr"
   [(unspec_volatile [(match_operand 0 "const_uimm5_operand")
 		     (match_operand:SI 1 "register_operand" "r")]
-	  UNSPEC_MOVGR2FCSR)]
+	  UNSPECV_MOVGR2FCSR)]
   "TARGET_HARD_FLOAT"
   "movgr2fcsr\t$r%0,%1")
 

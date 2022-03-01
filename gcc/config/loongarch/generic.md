@@ -1,5 +1,5 @@
 ;; Generic DFA-based pipeline description for LoongArch targets
-;; Copyright (C) 2021 Free Software Foundation, Inc.
+;; Copyright (C) 2021-2022 Free Software Foundation, Inc.
 ;; Contributed by Loongson Ltd.
 ;; Based on MIPS target for GNU compiler.
 
@@ -35,7 +35,7 @@
 (define_cpu_unit "alu" "alu")
 (define_cpu_unit "imuldiv" "imuldiv")
 
-;; Ghost instructions produce no real code and introduce no hazards.
+;; Ghost instructions produce no real code.
 ;; They exist purely to express an effect on dataflow.
 (define_insn_reservation "ghost" 0
   (eq_attr "type" "ghost")
