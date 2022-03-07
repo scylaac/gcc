@@ -43,7 +43,7 @@ abi_priority_list[] = {
 };
 
 /* Initialize enabled_abi_types from TM_MULTILIB_LIST.  */
-#ifdef __DISABLE_MULTILIB
+#ifdef LA_DISABLE_MULTILIB
 #define MULTILIB_LIST_LEN 1
 #else
 #define MULTILIB_LIST_LEN (sizeof (tm_multilib_list) / sizeof (int) / 2)
@@ -64,7 +64,7 @@ is_multilib_enabled (struct loongarch_abi abi)
 static void
 init_enabled_abi_types ()
 {
-#ifdef __DISABLE_MULTILIB
+#ifdef LA_DISABLE_MULTILIB
   enabled_abi_types[DEFAULT_ABI_BASE][DEFAULT_ABI_EXT] = 1;
 #else
   int abi_base, abi_ext;
@@ -204,7 +204,7 @@ loongarch_config_target (struct loongarch_target *target,
       t.abi.base = force_abi.base;
     }
 
-#ifdef __DISABLE_MULTILIB
+#ifdef LA_DISABLE_MULTILIB
   if (follow_multilib_list)
     if (t.abi.base != DEFAULT_ABI_BASE || t.abi.ext != DEFAULT_ABI_EXT)
       {
@@ -346,7 +346,7 @@ fatal:
 		}
 
 	      /* Otherwise, keep using abi_tmp with a warning.  */
-#ifdef __DISABLE_MULTILIB
+#ifdef LA_DISABLE_MULTILIB
 	      warning (0, "instruction set %qs cannot implement "
 		       "default ABI %qs, falling back to %qs",
 		       isa_str (&t.isa, '/'), abi_str (t.abi),
