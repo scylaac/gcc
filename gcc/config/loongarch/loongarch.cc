@@ -4090,6 +4090,21 @@ loongarch_expand_block_move (rtx dest, rtx src, rtx length)
   return false;
 }
 
+/* Return true if loongarch_expand_block_move is the preferred
+   implementation of the 'cpymemsi' template.  */
+
+bool
+loongarch_do_optimize_block_move_p (void)
+{
+  /* if -m[no-]memcpy is given explicitly */
+  if (target_flags_explicit & MASK_MEMCPY)
+    return !TARGET_MEMCPY;
+
+  /* if not, don't optimize under -Os */
+  return !optimize_size;
+}
+
+
 /* Expand a QI or HI mode atomic memory operation.
 
    GENERATOR contains a pointer to the gen_* function that generates
@@ -6132,14 +6147,6 @@ loongarch_spill_class (reg_class_t rclass ATTRIBUTE_UNUSED,
   return NO_REGS;
 }
 
-/* Implement TARGET_LRA_P.  */
-
-static bool
-loongarch_lra_p (void)
-{
-  return loongarch_lra_flag;
-}
-
 /* Implement TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS.  */
 
 static reg_class_t
@@ -6407,8 +6414,6 @@ loongarch_starting_frame_offset (void)
 
 #undef TARGET_SPILL_CLASS
 #define TARGET_SPILL_CLASS loongarch_spill_class
-#undef TARGET_LRA_P
-#define TARGET_LRA_P loongarch_lra_p
 #undef TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS
 #define TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS \
   loongarch_ira_change_pseudo_allocno_class

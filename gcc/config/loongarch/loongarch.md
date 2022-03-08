@@ -2441,9 +2441,10 @@
 		   (match_operand:BLK 1 "general_operand"))
 	      (use (match_operand:SI 2 ""))
 	      (use (match_operand:SI 3 "const_int_operand"))])]
-  " !TARGET_MEMCPY"
+  ""
 {
-  if (loongarch_expand_block_move (operands[0], operands[1], operands[2]))
+  if (TARGET_DO_OPTIMIZE_BLOCK_MOVE_P
+      && loongarch_expand_block_move (operands[0], operands[1], operands[2]))
     DONE;
   else
     FAIL;
