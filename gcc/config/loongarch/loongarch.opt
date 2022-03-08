@@ -147,14 +147,7 @@ Conditional moves for float are enabled.
 
 mmemcpy
 Target Mask(MEMCPY)
-Don't optimize block moves.
-
-mlra
-Target Var(loongarch_lra_flag) Init(1) Save
-Use LRA instead of reload.
-
-noasmopt
-Driver
+Prevent optimizing block moves, which is also the default behavior of -Os.
 
 mstrict-align
 Target Var(TARGET_STRICT_ALIGN) Init(0)

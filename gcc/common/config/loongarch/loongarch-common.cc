@@ -37,37 +37,7 @@ static const struct default_options loongarch_option_optimization_table[] =
   { OPT_LEVELS_NONE, 0, NULL, 0 }
 };
 
-/* Implement TARGET_HANDLE_OPTION.  */
-
-static bool
-loongarch_handle_option (struct gcc_options *opts,
-			 struct gcc_options *opts_set ATTRIBUTE_UNUSED,
-			 const struct cl_decoded_option *decoded,
-			 location_t loc ATTRIBUTE_UNUSED)
-{
-  size_t code = decoded->opt_index;
-  int value = decoded->value;
-
-  switch (code)
-    {
-    case OPT_mmemcpy:
-      if (value)
-	{
-	  if (opts->x_optimize_size)
-	    opts->x_target_flags |= MASK_MEMCPY;
-	}
-      else
-	opts->x_target_flags &= ~MASK_MEMCPY;
-      return true;
-
-    default:
-      return true;
-    }
-}
-
 #undef TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS	MASK_CHECK_ZERO_DIV
-#undef TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION loongarch_handle_option
 
 struct gcc_targetm_common targetm_common = TARGETM_COMMON_INITIALIZER;
