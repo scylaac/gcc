@@ -21,14 +21,17 @@ LA_MULTIARCH_TRIPLET = $(patsubst LA_MULTIARCH_TRIPLET=%,%,$\
 $(filter LA_MULTIARCH_TRIPLET=%,$(tm_defines)))
 
 # String definition header
-$(srcdir)/config/loongarch/loongarch-str.h: s-loongarch-str ; @true
+LA_STR_H = $(srcdir)/config/loongarch/loongarch-str.h
+
+# String definition header
+$(LA_STR_H): s-loongarch-str ; @true
 s-loongarch-str: $(srcdir)/config/loongarch/genopts/genstr.sh \
 	$(srcdir)/config/loongarch/genopts/loongarch-strings
 	$(SHELL) $(srcdir)/config/loongarch/genopts/genstr.sh header \
     $(srcdir)/config/loongarch/genopts/loongarch-strings > \
     tmp-loongarch-str.h
 	$(SHELL) $(srcdir)/../move-if-change tmp-loongarch-str.h \
-		$(srcdir)/config/loongarch/loongarch-str.h
+		$(LA_STR_H)
 	$(STAMP) s-loongarch-str
 
 loongarch-c.o: $(srcdir)/config/loongarch/loongarch-c.cc $(CONFIG_H) $(SYSTEM_H) \
@@ -58,7 +61,8 @@ loongarch-def.o: $(srcdir)/config/loongarch/loongarch-def.c $(LA_STR_H)
 
 $(srcdir)/config/loongarch/loongarch.opt: s-loongarch-opt ; @true
 s-loongarch-opt: $(srcdir)/config/loongarch/genopts/genstr.sh \
-	$(srcdir)/config/loongarch/genopts/loongarch.opt.in
+	$(srcdir)/config/loongarch/genopts/loongarch.opt.in \
+	$(srcdir)/config/loongarch/genopts/loongarch-strings $(LA_STR_H)
 	$(SHELL) $(srcdir)/config/loongarch/genopts/genstr.sh opt \
     $(srcdir)/config/loongarch/genopts/loongarch.opt.in \
     > tmp-loongarch.opt
