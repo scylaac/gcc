@@ -192,11 +192,9 @@ loongarch_config_target (struct loongarch_target *target,
       force_isa.fpu = opt_fpu;
       force_abi.base = isa_default_abi (&force_isa).base;
 
-      if (isa_fpu_compat_p (&default_isa, &force_isa));
-	/* Keep quiet if -m*-float does not promote the FP ABI.  */
-      else if (constrained.abi_base && (t.abi.base != force_abi.base))
+      if (constrained.abi_base && (t.abi.base != force_abi.base))
 	inform (UNKNOWN_LOCATION,
-		"%<-m%s%> overrides %<-m%s=%s%>, promoting ABI to %qs",
+		"%<-m%s%> overrides %<-m%s=%s%>, adjusting ABI to %qs",
 		loongarch_switch_strings[on_switch],
 		OPTSTR_ABI_BASE, loongarch_abi_base_strings[t.abi.base],
 		abi_str (force_abi));
