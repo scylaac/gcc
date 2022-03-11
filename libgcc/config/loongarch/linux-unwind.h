@@ -41,7 +41,7 @@ loongarch_fallback_frame_state (struct _Unwind_Context *context,
   _Unwind_Ptr new_cfa;
   int i;
 
-  /* 03822c0b dli a7, 0x8b (sigreturn)  */
+  /* 03822c0b li.d a7, 0x8b (sigreturn)  */
   /* 002b0000 syscall 0  */
   if (pc[1] != 0x002b0000)
     return _URC_END_OF_STACK;
