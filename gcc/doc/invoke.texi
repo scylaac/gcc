@@ -1003,7 +1003,7 @@ Objective-C and Objective-C++ Dialects}.
 -mcond-move-float  -mno-cond-move-float @gol
 -memcpy  -mno-memcpy -mstrict-align -mno-strict-align @gol
 -mmax-inline-memcpy-size=@var{n} @gol
--mlra -mcmodel=@var{code-model}}
+-mcmodel=@var{code-model}}
 
 @emph{M32R/D Options}
 @gccoptlist{-m32r2  -m32rx  -m32r @gol
@@ -24421,7 +24421,6 @@ A generic CPU with 64-bit extensions.
 LoongArch LA464 CPU with LBT, LSX, LASX, LVZ.
 @end table
 
-
 @item -mtune=@var{cpu-type}
 @opindex mtune
 Optimize the output for the given processor, specified by microarchitecture
@@ -24429,27 +24428,26 @@ name.
 
 @item -mabi=@var{base-abi-type}
 @opindex mabi
-Generate code for the specified calling convention. @gol
-Set base ABI to one of: @gol
+Generate code for the specified calling convention.
+@var{base-abi-type} can be one of:
 @table @samp
 @item lp64d
 Uses 64-bit general purpose registers and 32/64-bit floating-point
-registers for parameter passing.  Data model is LP64, where int
-is 32 bits, while long int and pointers are 64 bits.
+registers for parameter passing.  Data model is LP64, where @samp{int}
+is 32 bits, while @samp{long int} and pointers are 64 bits.
 @item lp64f
 Uses 64-bit general purpose registers and 32-bit floating-point
-registers for parameter passing.  Data model is LP64, where int
-is 32 bits, while long int and pointers are 64 bits.
+registers for parameter passing.  Data model is LP64, where @samp{int}
+is 32 bits, while @samp{long int} and pointers are 64 bits.
 @item lp64s
 Uses 64-bit general purpose registers and no floating-point
-registers for parameter passing.  Data model is LP64, where int
-is 32 bits, while long int and pointers are 64 bits.
+registers for parameter passing.  Data model is LP64, where @samp{int}
+is 32 bits, while @samp{long int} and pointers are 64 bits.
 @end table
-
 
 @item -mfpu=@var{fpu-type}
 @opindex mfpu
-Generating code for the specified FPU type: @gol
+Generate code for the specified FPU type, which can be one of:
 @table @samp
 @item 64
 Allow the use of hardware floating-point instructions for 32-bit
@@ -24461,7 +24459,6 @@ operations.
 @item 0
 Prevent the use of hardware floating-point instructions.
 @end table
-
 
 @item -msoft-float
 @opindex msoft-float
@@ -24481,54 +24478,56 @@ Force @option{-mfpu=64} and allow the use of 32/64-bit floating-point
 registers for parameter passing.  This option may change the target
 ABI.
 
-
 @item -mbranch-cost=@var{n}
 @opindex -mbranch-cost
-Set the cost of branches to roughly n instructions.
+Set the cost of branches to roughly @var{n} instructions.
 
 @item -mcheck-zero-division
 @itemx -mno-check-zero-divison
 @opindex -mcheck-zero-division
-Trap (do not trap) on integer division by zero. The default is '-mcheck-zero-
-division'.
-
+Trap (do not trap) on integer division by zero.  The default is
+@option{-mcheck-zero-division}.
 
 @item -mcond-move-int
 @itemx -mno-cond-move-int
 @opindex -mcond-move-int
-Conditional moves for integer are enabled (disabled). The default is
-'-mcond-move-float'.
+Conditional moves for integral data in general-purpose registers
+are enabled (disabled).  The default is @option{-mcond-move-int}.
+
+@item -mcond-move-float
+@itemx -mno-cond-move-float
+@opindex -mcond-move-float
+Conditional moves for floating-point registers are enabled (disabled).
+The default is @option{-mcond-move-float}.
 
 @item -mmemcpy
 @itemx -mno-memcpy
 @opindex -mmemcpy
-Force (do not force) the use of memcpy for non-trivial block moves. The default
-is '-mno-memcpy', which allows GCC to inline most constant-sized copies.
-
-
-@item -mlra
-@opindex -mlra
-Use the new LRA register allocator. By default, the LRA is used.
+Force (do not force) the use of @code{memcpy} for non-trivial block moves.
+The default is @option{-mno-memcpy}, which allows GCC to inline most
+constant-sized copies.  Setting optimization level to @option{-Os} also
+forces the use of @code{memcpy}, but @option{-mno-memcpy} may override this
+behavior if explicitly specified, regardless of the order these options on
+the command line.
 
 @item -mstrict-align
 @itemx -mno-strict-align
 @opindex -mstrict-align
 Avoid or allow generating memory accesses that may not be aligned on a natural
 object boundary as described in the architecture specification. The default is
-'-mno-strict-align'.
+@option{-mno-strict-align}.
 
 @item -msmall-data-limit=@var{number}
 @opindex -msmall-data-limit
-Put global and static data smaller than @code{number} bytes into a special section (on some targets).
-Default value is 0.
-
+Put global and static data smaller than @code{number} bytes into a special
+section (on some targets).  The default value is 0.
 
 @item -mmax-inline-memcpy-size=@var{n}
 @opindex -mmax-inline-memcpy-size
-Set the max size n of memcpy to inline, default n is 1024.
+Inline all block moves (such as calls to @code{memcpy} or structure copies)
+less than or equal to @var{n} bytes.  The default value of @var{n} is 1024.
 
 @item -mcmodel=@var{code-model}
-Default code model is normal.
 Set the code model to one of:
 @table @samp
 @item tiny-static
@@ -24576,9 +24575,8 @@ local symbol: The data and text section must be within +/-8EiB addressing space.
 global symbol: The data got table must be within +/-8EiB addressing space.
 @end itemize
 @end table
+The default code model is @code{normal}.
 @end table
-
-
 
 @node M32C Options
 @subsection M32C Options

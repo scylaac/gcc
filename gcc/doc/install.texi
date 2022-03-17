@@ -1259,8 +1259,8 @@ profile.  The union of these options is considered when specifying both
 @var{list} is a comma-separated list of the following ABI identifiers:
 @code{lp64d[/base]} @code{lp64f[/base]} @code{lp64d[/base]}, where the
 @code{/base} suffix may be omitted, to enable their respective run-time
-libraries.  If @var{list} is empty, @code{default}
-or @option{--with-multilib-list} is not specified, then the default ABI
+libraries.  If @var{list} is empty or @code{default},
+or if @option{--with-multilib-list} is not specified, then the default ABI
 as specified by @option{--with-abi} or implied by @option{--target} is selected.
 
 @item riscv*-*-*
