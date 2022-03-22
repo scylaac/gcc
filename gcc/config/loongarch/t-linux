@@ -27,8 +27,8 @@ MULTILIB_REQUIRED = $(subst $(comma), ,$(TM_MULTILIB_CONFIG))
 
 # Multiarch
 ifneq ($(call if_multiarch,yes),yes)
-    # Define __DISABLE_MULTIARCH if multiarch is disabled.
-    tm_defines += __DISABLE_MULTIARCH
+    # Define LA_DISABLE_MULTIARCH if multiarch is disabled.
+    tm_defines += LA_DISABLE_MULTIARCH
 else
     # Only define MULTIARCH_DIRNAME when multiarch is enabled,
     # or it would always introduce ${target} into the search path.
@@ -36,7 +36,7 @@ else
 endif
 
 # Don't define MULTILIB_OSDIRNAMES if multilib is disabled.
-ifeq ($(filter __DISABLE_MULTILIB,$(tm_defines)),)
+ifeq ($(filter LA_DISABLE_MULTILIB,$(tm_defines)),)
 
     MULTILIB_OSDIRNAMES = \
       mabi.lp64d=../lib64$\

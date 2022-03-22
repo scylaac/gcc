@@ -117,8 +117,7 @@
   "A memory operand whose address is formed by a base register and (optionally scaled)
    index register."
   (and (match_code "mem")
-       (not (match_test "loongarch_14bit_shifted_offset_address_p (XEXP (op, 0), mode)"))
-       (not (match_test "loongarch_12bit_offset_address_p (XEXP (op, 0), mode)"))))
+       (match_test "loongarch_base_index_address_p (XEXP (op, 0), mode)")))
 
 (define_constraint "l"
 "A signed 16-bit constant."
@@ -146,7 +145,7 @@
        (match_test "LU32I_OPERAND (ival)")))
 
 (define_constraint "v"
-  "A nsigned 64-bit constant and low 44-bit is zero (for logic instructions)."
+  "A signed 64-bit constant and low 44-bit is zero (for logic instructions)."
   (and (match_code "const_int")
        (match_test "LU52I_OPERAND (ival)")))
 
@@ -200,5 +199,5 @@
   An address that is held in a general-purpose register.
   The offset is zero"
   (and (match_code "mem")
-       (match_test "GET_CODE (XEXP (op,0)) == REG")))
+       (match_test "REG_P (XEXP (op, 0))")))
 

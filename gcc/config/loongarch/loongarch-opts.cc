@@ -43,7 +43,7 @@ abi_priority_list[] = {
 };
 
 /* Initialize enabled_abi_types from TM_MULTILIB_LIST.  */
-#ifdef __DISABLE_MULTILIB
+#ifdef LA_DISABLE_MULTILIB
 #define MULTILIB_LIST_LEN 1
 #else
 #define MULTILIB_LIST_LEN (sizeof (tm_multilib_list) / sizeof (int) / 2)
@@ -64,7 +64,7 @@ is_multilib_enabled (struct loongarch_abi abi)
 static void
 init_enabled_abi_types ()
 {
-#ifdef __DISABLE_MULTILIB
+#ifdef LA_DISABLE_MULTILIB
   enabled_abi_types[DEFAULT_ABI_BASE][DEFAULT_ABI_EXT] = 1;
 #else
   int abi_base, abi_ext;
@@ -202,7 +202,7 @@ loongarch_config_target (struct loongarch_target *target,
       t.abi.base = force_abi.base;
     }
 
-#ifdef __DISABLE_MULTILIB
+#ifdef LA_DISABLE_MULTILIB
   if (follow_multilib_list)
     if (t.abi.base != DEFAULT_ABI_BASE || t.abi.ext != DEFAULT_ABI_EXT)
       {
@@ -244,7 +244,7 @@ loongarch_config_target (struct loongarch_target *target,
 config_target_isa:
 
   /* Get default ISA from "-march" or its default value.  */
-  t.isa = loongarch_cpu_default_isa[__ACTUAL_ARCH];
+  t.isa = loongarch_cpu_default_isa[LARCH_ACTUAL_ARCH];
 
   /* Apply incremental changes.  */
   /* "-march=native" overrides the default FPU type.  */
@@ -260,8 +260,8 @@ config_target_isa:
 
      - If the base ABI is incompatible with the default arch,
        try using the default -march it implies (and mark it
-       as "constrained" this time), then re-apply step 3.
-  */
+       as "constrained" this time), then re-apply step 3.  */
+
   struct loongarch_abi abi_tmp;
   const struct loongarch_isa* isa_min;
 
@@ -303,8 +303,8 @@ config_target_isa:
   else if (!constrained.fpu)
     t.isa.fpu = isa_min->fpu;
   else if (!constrained.abi_base)
-      /* If -march is compatible with the default ABI
-	 while -mfpu is not.  */
+    /* If -march is compatible with the default ABI
+       while -mfpu is not.  */
     abi_tmp.base = isa_default_abi (&t.isa).base;
   else
     goto fatal;
@@ -344,7 +344,7 @@ fatal:
 		}
 
 	      /* Otherwise, keep using abi_tmp with a warning.  */
-#ifdef __DISABLE_MULTILIB
+#ifdef LA_DISABLE_MULTILIB
 	      warning (0, "instruction set %qs cannot implement "
 		       "default ABI %qs, falling back to %qs",
 		       isa_str (&t.isa, '/'), abi_str (t.abi),
@@ -378,7 +378,7 @@ fallback:
   /* 5.  Target code model */
   t.cmodel = constrained.cmodel ? opt_cmodel : CMODEL_NORMAL;
 
-  /* cleanup and return */
+  /* Cleanup and return.  */
   obstack_free (&msg_obstack, NULL);
   *target = t;
 }
@@ -481,7 +481,7 @@ abi_default_cpu_arch (struct loongarch_abi abi)
 static const char*
 abi_str (struct loongarch_abi abi)
 {
-  /* "/base" can be omitted */
+  /* "/base" can be omitted.  */
   if (abi.ext == ABI_EXT_BASE)
     return (const char*)
       obstack_copy0 (&msg_obstack, loongarch_abi_base_strings[abi.base],
